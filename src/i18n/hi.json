@@ -1,0 +1,19 @@
+{
+  "login": "लॉगिन",
+  "register": "रजिस्टर",
+  "email": "ईमेल",
+  "password": "पासवर्ड",
+  "dashboard": "डैशबोर्ड",
+  "report_symptoms": "लक्षण रिपोर्ट करें",
+  "report_water_test": "जल परीक्षण",
+  "alerts": "अलर्ट",
+  "offline_queue": "ऑफ़लाइन कतार",
+  "settings": "सेटिंग्स",
+  "help": "मदद और स्वच्छता",
+  "name": "नाम",
+  "age": "आयु",
+  "gender": "लिंग",
+  "symptoms": "लक्षण",
+  "submit": "सबमिट करें",
+  "send_sms": "एसएमएस भेजें"
+}

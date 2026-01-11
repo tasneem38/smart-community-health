@@ -1,0 +1,19 @@
+{
+  "login": "Login",
+  "register": "Register",
+  "email": "Email",
+  "password": "Password",
+  "dashboard": "Dashboard",
+  "report_symptoms": "Report Symptoms",
+  "report_water_test": "Water Test",
+  "alerts": "Alerts",
+  "offline_queue": "Offline Queue",
+  "settings": "Settings",
+  "help": "Help & Hygiene",
+  "name": "Name",
+  "age": "Age",
+  "gender": "Gender",
+  "symptoms": "Symptoms",
+  "submit": "Submit",
+  "send_sms": "Send SMS Fallback"
+}

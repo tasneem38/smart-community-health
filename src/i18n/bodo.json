@@ -1,0 +1,19 @@
+{
+  "login": "Login (Bodo)",
+  "register": "Register (Bodo)",
+  "email": "Email (Bodo)",
+  "password": "Password (Bodo)",
+  "dashboard": "Dashboard (Bodo)",
+  "report_symptoms": "Report Symptoms (Bodo)",
+  "report_water_test": "Water Test (Bodo)",
+  "alerts": "Alerts (Bodo)",
+  "offline_queue": "Offline Queue (Bodo)",
+  "settings": "Settings (Bodo)",
+  "help": "Help & Hygiene (Bodo)",
+  "name": "Name (Bodo)",
+  "age": "Age (Bodo)",
+  "gender": "Gender (Bodo)",
+  "symptoms": "Symptoms (Bodo)",
+  "submit": "Submit (Bodo)",
+  "send_sms": "Send SMS (Bodo)"
+}
