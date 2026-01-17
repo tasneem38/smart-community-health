@@ -1,0 +1,19 @@
+{
+    "login": "প্ৰৱেশ কৰক",
+    "register": "পঞ্জীয়ন কৰক",
+    "email": "ইমেইল",
+    "password": "পাছৱৰ্ড",
+    "dashboard": "ডেশ্ববৰ্ড",
+    "report_symptoms": "লক্ষণসমূহ জনাওক",
+    "report_water_test": "পানীৰ পৰীক্ষা",
+    "alerts": "সতৰ্কবাণী",
+    "offline_queue": "অফলাইন শাৰী",
+    "settings": "ছেটিংছ",
+    "help": "সহায় আৰু হাইজিন",
+    "name": "নাম",
+    "age": "বয়স",
+    "gender": "লিঙ্গ",
+    "symptoms": "লক্ষণসমূহ",
+    "submit": "দাখিল কৰক",
+    "send_sms": "SMS প্ৰেৰণ কৰক"
+}

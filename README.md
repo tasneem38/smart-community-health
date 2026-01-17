@@ -1,83 +1,74 @@
-# Smart Health Surveillance — Expo Starter App
+# Smart Health Surveillance App
 
-A starter Expo + React Native app for ASHA workers, clinic staff, and community volunteers. Offline-first, multilingual, SMS fallback, role-based UI.
+A comprehensive offline-first React Native application designed for rural health surveillance in India (Assam/North East focus). It connects ASHA workers, Localities (villagers), and Clinic staff to a central health monitoring system.
 
-## Features
-- Login & Register (mocked)
-- Role-based Dashboard (ASHA / Clinic / Community)
-- Symptom Report form (geo, photo, village, offline queue)
-- Water Quality Test form
-- Offline queue (SQLite)
-- Sync manager (Sync on reconnect)
-- SMS fallback using `expo-sms`
-- i18n support (English, Hindi, Bodo placeholder)
-- Mock API files with easy switch to real backend
-- Clean UI with React Native Paper
+## 🌟 Key Features
 
-## Quick setup
-1. Install Expo CLI (if not installed)
+### 👩‍⚕️ For ASHA Workers
+- **Symptom Reporting**: Report detailed symptoms for villagers with geo-tagging and offline support.
+- **Water Quality Testing**: Submit water test reports (turbidity, pH) with photo evidence.
+- **AI-Powered Assistance**: Symptom Checker integrated with Groq AI for preliminary assessment.
+- **Alerts & Assistance**: Receive high-risk alerts and manage village assistance requests.
+- **Offline Queue**: Works seamlessly without internet; syncs data when online.
+
+### 🏡 For Localities (Villagers)
+- **Report Symptoms**: Simplified interface for villagers to report their own symptoms.
+- **Water Status**: View real-time safety status of village water sources.
+- **Community Precautions**: Receive AI-generated health precautions (e.g., "Boil water alert").
+- **Request Help**: One-tap assistance request to local ASHA workers.
+
+### 🏥 For Clinic Staff
+- **Dashboard**: Monitor incoming reports and alerts.
+- **Patient Management**: Assign follow-ups and review pending cases.
+
+## 🎨 UI & Design
+- **Premium Aesthetic**: "Midnight Blue & Gold" theme for a professional, trustworthy look.
+- **Localized**: Full translation support (English default).
+- **Interactive**: Smooth animations and clear visual indicators for safe/unsafe conditions.
+
+## 🛠 Tech Stack
+- **Frontend**: React Native (Expo), React Native Paper, Victory Native (Charts).
+- **Backend**: Node.js (Express), PostgreSQL (Data), Firebase (Images/Storage).
+- **AI**: Groq AI SDK for generating health insights and precautions.
+- **Offline**: `expo-sqlite` and `NetInfo` for robust offline styling.
+
+## 📂 Project Structure
+```
+src/
+  screens/
+    asha/       # ASHA-specific screens (Alerts, Reports, etc.)
+    localite/   # Villager-facing screens
+    clinic/     # Clinic staff dashboard & tools
+  components/   # Reusable UI components
+  api/          # API clients (Postgres, Firebase, AI)
+  db/           # Local SQLite database & Sync logic
+  navigation/   # Stack & Tab navigators
+```
+
+## 🚀 Getting Started
+
+1. **Install Dependencies**
    ```bash
-   npm install -g expo-cli
-Clone and install dependencies
+   npm install
+   ```
 
-npm install
+2. **Start Backend**
+   - Ensure PostgreSQL is running.
+   - Navigate to `server/` and run:
+     ```bash
+     npm start
+     ```
 
+3. **Start Mobile App**
+   ```bash
+   npx expo start -c
+   ```
 
-Start Metro
+4. **Environment Variables**
+   - update `src/api/postgres/client.ts` with your local IP address.
 
-npm run start
+## 🔄 Offline & Sync
+The app automatically detects network changes. Reports created offline are stored locally and pushed to the server automatically when connectivity is restored.
 
-
-Run on Android / iOS via Expo Go or device emulator.
-
-How to run on Android device
-
-Connect device and enable USB debugging or scan the QR from Expo Go app.
-
-npm run android (requires Android Studio) or open with Expo Go.
-
-Testing offline mode
-
-Use the app to create a symptom or water test while connected — it will attempt to post to the mock API.
-
-Turn off network on device (Airplane mode), create a report — it will be added to the offline SQLite queue.
-
-Turn network back on — the sync manager listens to network changes and will upload pending items automatically.
-
-How to plug in real API
-
-Edit src/api/api.ts:
-
-Set useReal = true
-
-Replace REAL_BASE with your backend URL
-
-Replace loginApi, sendSymptomReport, etc. with real fetch calls.
-
-Notes & TODOs
-
-This scaffold uses expo-sqlite for local persistence. For heavy production use, consider WatermelonDB or Realm.
-
-Add background tasks (TaskManager/BackgroundFetch) for periodic sync.
-
-Add proper authentication, token refresh, and secure storage (SecureStore) for production.
-
-Improve image upload to real backend (multipart/form-data).
-
-Files of interest
-
-src/db/db.ts — local DB schema & queue
-
-src/services/syncService.ts — Network listener + sync
-
-src/api/api.ts — mock API + switch to real backend
-
-src/i18n/ — translations
-
-### Notes, design choices & how to extend
-- **Offline storage**: `expo-sqlite` chosen for simplicity; queue table stores pending JSON payloads. It’s easy to inspect and debug.
-- **Sync**: `syncService.ts` listens to NetInfo network changes and attempts to flush queue. For production add exponential retry, dedup, and conflict resolution.
-- **SMS fallback**: `smsFormatter.ts` creates a compact string `SYM|name|age|codes|date|lat,lon|village`. `expo-sms` is used to send SMS when desired.
-- **i18n**: react-i18next with JSON resource files. Language switcher in Settings changes immediately.
-- **UI**: React Native Paper ensures accessible components and quick theming. Colors chosen are calming blue/green medical tones.
-- **Role-based UI**: Auth context stores `role` returned from mocked login. Dashboard renders tiles based on role.
+---
+*Built for the Smart Community Health Initiative.*

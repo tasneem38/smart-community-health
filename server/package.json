@@ -1,0 +1,23 @@
+{
+    "name": "smart-health-backend",
+    "version": "1.0.0",
+    "description": "Backend for Smart Health App replacing Firebase",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "nodemon index.js",
+        "init-db": "node init_db.js"
+    },
+    "dependencies": {
+        "bcryptjs": "^3.0.3",
+        "body-parser": "^1.20.2",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "node-fetch": "^2.7.0",
+        "pg": "^8.11.3"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.1"
+    }
+}

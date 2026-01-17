@@ -1,0 +1,19 @@
+{
+    "login": "লগ ইন তৌবিউ",
+    "register": "রেজিষ্টার তৌবিউ",
+    "email": "ইমেল",
+    "password": "পাসৱৰ্ড",
+    "dashboard": "ডেশবোৰ্ড",
+    "report_symptoms": "লাইওংগী রিপোট",
+    "report_water_test": "ইশিং তেস্ত",
+    "alerts": "চেকশিনৱা",
+    "offline_queue": "ওফলাইন",
+    "settings": "সেতিংস",
+    "help": "মতেং",
+    "name": "মিং",
+    "age": "চহী",
+    "gender": "নুপা/নুপি",
+    "symptoms": "লাইওং",
+    "submit": "পিশিনবা",
+    "send_sms": "এসএমএস থাখিব"
+}

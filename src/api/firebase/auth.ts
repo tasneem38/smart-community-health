@@ -1,33 +1,26 @@
 // src/api/firebase/auth.ts
-import { auth } from "./config";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updateProfile,
-} from "firebase/auth";
+// REPLACED WITH POSTGRES IMPLEMENTATION
+import { registerWithPostgres, loginWithPostgres } from "../postgres/client";
 
-export async function registerWithFirebase({ name, email, password, role }) {
-  const res = await createUserWithEmailAndPassword(auth, email, password);
-
-  // Save display name
-  await updateProfile(res.user, { displayName: name });
-
+export async function registerWithFirebase(details: any) {
+  const res = await registerWithPostgres(details);
+  // map to old shape
   return {
-    id: res.user.uid,
-    name,
-    email,
-    role,
-    token: await res.user.getIdToken(),
+    id: res.user.id,
+    name: res.user.name,
+    email: res.user.email,
+    role: res.user.role,
+    village: res.user.village,
+    token: res.token,
   };
 }
 
 export async function loginWithFirebase(email: string, password: string) {
-  const res = await signInWithEmailAndPassword(auth, email, password);
-
+  const res = await loginWithPostgres(email, password);
   return {
-    id: res.user.uid,
-    name: res.user.displayName,
+    id: res.user.id,
+    name: res.user.name,
     email: res.user.email,
-    token: await res.user.getIdToken(),
+    token: res.token,
   };
 }

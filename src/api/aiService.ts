@@ -1,24 +1,23 @@
-const GROQ_API_KEY = "YOUR_GROQ_API_KEY";
+const API_URL = "http://172.16.165.224:3000";
+
 export async function askGroq(prompt: string) {
   try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const res = await fetch(`${API_URL}/api/ai/analyze`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.2,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
     });
 
+    if (!res.ok) {
+      console.error("AI service error:", res.status);
+      return "⚠️ AI Error: Backend service unavailable";
+    }
+
     const data = await res.json();
-    return data.choices?.[0]?.message?.content || "";
+    return data.result || "";
   } catch (err) {
-    console.error("Groq AI Error:", err);
-    return "⚠️ AI Error: Unable to process request";
+    console.error("AI Service Error:", err);
+    return "⚠️ AI Error: Network request failed";
   }
 }
 

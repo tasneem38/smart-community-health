@@ -1,13 +1,19 @@
 import React, { useState, useContext } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
-import { Text, Card, ActivityIndicator } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import { Text, Card, ActivityIndicator, TextInput } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import AppInput from '../../components/AppInput';
 import AppButton from '../../components/AppButton';
-import { loginApi } from '../../api/api';
+import { loginWithPostgres } from '../../api/postgres/client';
 import { AuthContext } from '../../store/authContext';
 
-export default function LoginScreen({ navigation }) {
+import { useTranslation } from 'react-i18next';
+
+const { width } = Dimensions.get('window');
+
+export default function LoginScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const { login } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,74 +26,92 @@ export default function LoginScreen({ navigation }) {
     }
 
     setLoading(true);
-    const res = await loginApi(email, password);
-    setLoading(false);
-
-    if (res.ok) {
-      login(res.data);
-    } else {
-      alert('Invalid email or password');
+    try {
+      const data = await loginWithPostgres(email, password);
+      // Backend returns { user: {...}, token: '...' }
+      login({ ...data.user, token: data.token });
+    } catch (err: any) {
+      alert(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
 
-      {/* Header */}
-      <View style={styles.headerRow}>
-        <Image
-          source={require('../../../assets/images/logo.jpg')}
-          style={styles.logo}
-        />
-        <Text style={styles.smartHealth}>Smart Health</Text>
-      </View>
+          {/* Header section with Updated UI */}
+          {/* Header section with Updated UI */}
+          <View style={styles.headerContainer}>
+            <View style={styles.iconCircle}>
+              <MaterialCommunityIcons name="heart-pulse" size={48} color="#001F3F" />
+            </View>
+            <Text style={styles.appTitle}>{t('app_title')}</Text>
+            <Text style={styles.tagline}>{t('tagline')}</Text>
+          </View>
 
-      {/* Login Card */}
-      <Card mode="elevated" style={styles.card}>
-        <Card.Content>
+          {/* Login Form Card */}
+          <Card style={styles.card}>
+            <Card.Content style={styles.cardContent}>
+              <Text style={styles.welcomeTitle}>{t('welcome_title')}</Text>
+              <Text style={styles.welcomeSub}>{t('welcome_sub')}</Text>
 
-          <Text style={styles.screenTitle}>Welcome Back 👋</Text>
-          <Text style={styles.subtitle}>
-            Continue your Smart Health journey.
-          </Text>
+              <AppInput
+                label={t('email')}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                left={<TextInput.Icon icon="email" />}
+                style={styles.input}
+              />
 
-          {/* Inputs */}
-          <AppInput
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+              <AppInput
+                label={t('password')}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                left={<TextInput.Icon icon="lock" />}
+                style={styles.input}
+              />
 
-          <AppInput
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+              {loading ? (
+                <ActivityIndicator
+                  animating={true}
+                  color="#001F3F"
+                  size="large"
+                  style={{ marginTop: 20 }}
+                />
+              ) : (
+                <AppButton
+                  style={styles.loginButton}
+                  labelStyle={styles.loginButtonLabel}
+                  onPress={doLogin}
+                >
+                  {t('login')}
+                </AppButton>
+              )}
 
-          {/* Login Button */}
-          {loading ? (
-            <ActivityIndicator style={{ marginTop: 14 }} />
-          ) : (
-            <AppButton style={styles.button} onPress={doLogin}>
-              Login
-            </AppButton>
-          )}
+              <View style={styles.footerRow}>
+                <Text style={styles.footerText}>{t('no_account')}</Text>
+                <AppButton
+                  mode="text"
+                  onPress={() => navigation.navigate('Register')}
+                  labelStyle={styles.registerLink}
+                >
+                  {t('register')}
+                </AppButton>
+              </View>
+            </Card.Content>
+          </Card>
 
-          {/* Register Link */}
-          <AppButton
-            mode="text"
-            onPress={() => navigation.navigate('Register')}
-            style={{ marginTop: 10 }}
-          >
-            Don’t have an account? Register
-          </AppButton>
-
-        </Card.Content>
-      </Card>
-
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -95,55 +119,102 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E9F5FF',
-    paddingHorizontal: 20,
+    backgroundColor: '#001F3F', // Midnight Blue
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
+    padding: 24,
   },
 
-  /* HEADER */
-  headerRow: {
-    flexDirection: 'row',
+  /* Header */
+  headerContainer: {
     alignItems: 'center',
+    marginBottom: 40,
+  },
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFD700', // Soft Gold background
     justifyContent: 'center',
-    marginBottom: 28,
+    alignItems: 'center',
+    marginBottom: 16,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
-  logo: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  smartHealth: {
-    fontSize: 28,
+  appTitle: {
+    fontSize: 32,
     fontWeight: '800',
-    color: '#0A4D68',
+    color: '#fff',
+    letterSpacing: 0.5,
+  },
+  tagline: {
+    fontSize: 14,
+    color: '#FFD700', // Soft Gold
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginTop: 6,
+    fontWeight: '600',
   },
 
-  /* CARD */
+  /* Card */
   card: {
     borderRadius: 24,
-    backgroundColor: '#FFFFFFEE',
+    backgroundColor: '#fff',
     elevation: 10,
-    paddingVertical: 14,
   },
-
-  /* TEXT */
-  screenTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+  cardContent: {
+    paddingVertical: 24,
+    paddingHorizontal: 12,
+  },
+  welcomeTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#001F3F',
     textAlign: 'center',
     marginBottom: 6,
   },
-  subtitle: {
+  welcomeSub: {
+    fontSize: 16,
+    color: '#666',
     textAlign: 'center',
-    fontSize: 14,
-    color: '#555',
-    marginBottom: 20,
+    marginBottom: 30,
+  },
+  input: {
+    backgroundColor: '#F7F9FC',
   },
 
-  /* BUTTON */
-  button: {
-    marginTop: 16,
-    paddingVertical: 4,
+  /* Buttons */
+  loginButton: {
+    marginTop: 18,
+    backgroundColor: '#001F3F', // Dark Blue button
+    borderRadius: 12,
+    paddingVertical: 6,
+  },
+  loginButtonLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFD700', // Gold text
+  },
+
+  /* Footer */
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  footerText: {
+    fontSize: 15,
+    color: '#555',
+  },
+  registerLink: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#001F3F',
   },
 });

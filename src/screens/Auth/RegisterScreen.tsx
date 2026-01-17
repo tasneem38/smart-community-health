@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Image } from "react-native";
-import { Text, Card, ActivityIndicator } from "react-native-paper";
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { Text, Card, ActivityIndicator, HelperText } from "react-native-paper";
 import { Dropdown } from "react-native-element-dropdown";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import AppInput from "../../components/AppInput";
 import AppButton from "../../components/AppButton";
 import { registerApi } from "../../api/api";
 
-export default function RegisterScreen({ navigation }) {
+export default function RegisterScreen({ navigation }: any) {
   const [name, setName] = useState("");
   const [role, setRole] = useState("LOCALITE");
   const [email, setEmail] = useState("");
@@ -15,6 +16,7 @@ export default function RegisterScreen({ navigation }) {
   const [village, setVillage] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [isFocus, setIsFocus] = useState(false);
 
   const roles = [
     { label: "Localite (Citizen)", value: "LOCALITE" },
@@ -33,84 +35,123 @@ export default function RegisterScreen({ navigation }) {
     setLoading(false);
 
     if (res.ok) {
-      alert("Account created! Please login.");
+      alert("Account created successfully! Please login.");
       navigation.goBack();
     } else {
-      alert("Registration failed.");
+      alert("Registration failed. Please try again.");
     }
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Image
-          source={require("../../../assets/images/logo.jpg")}
-          style={styles.logo}
-        />
-        <Text style={styles.smartHealth}>Smart Health</Text>
-      </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
 
-      <Card mode="elevated" style={styles.card}>
-        <Card.Content>
-          <Text style={styles.screenTitle}>Create Account ✨</Text>
-          <Text style={styles.subtitle}>
-            Join Smart Health & help keep your community healthy.
-          </Text>
+          {/* Header */}
+          <View style={styles.headerContainer}>
+            <View style={styles.iconCircle}>
+              <MaterialCommunityIcons name="account-plus" size={42} color="#001F3F" />
+            </View>
+            <Text style={styles.appTitle}>Smart Health</Text>
+            <Text style={styles.tagline}>Create Your Account</Text>
+          </View>
 
-          <AppInput label="Full Name" value={name} onChangeText={setName} />
+          {/* Form Card */}
+          <Card style={styles.card}>
+            <Card.Content style={styles.cardContent}>
 
-          <AppInput
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+              <Text style={styles.sectionHeader}>Personal Info</Text>
 
-          <AppInput
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+              <AppInput
+                label="Full Name"
+                value={name}
+                onChangeText={setName}
+                style={styles.input}
+              />
 
-          {/* Village Field */}
-          <AppInput
-            label="Village / Area"
-            value={village}
-            onChangeText={setVillage}
-          />
+              <AppInput
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                style={styles.input}
+              />
 
-          <Text style={styles.label}>Select Role</Text>
-          <Dropdown
-            data={roles}
-            labelField="label"
-            valueField="value"
-            placeholder="Select role"
-            value={role}
-            onChange={(item) => setRole(item.value)}
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-          />
+              <AppInput
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                style={styles.input}
+              />
+              <HelperText type={password.length > 0 && password.length < 6 ? "error" : "info"} visible={true}>
+                Password must be at least 6 characters long.
+              </HelperText>
 
-          {loading ? (
-            <ActivityIndicator style={{ marginTop: 18 }} />
-          ) : (
-            <AppButton onPress={doRegister} style={{ marginTop: 14 }}>
-              Register
-            </AppButton>
-          )}
+              <AppInput
+                label="Village / Area"
+                value={village}
+                onChangeText={setVillage}
+                style={styles.input}
+              />
 
-          <AppButton
-            mode="text"
-            onPress={() => navigation.goBack()}
-            style={{ marginTop: 10 }}
-          >
-            Already have an account? Login
-          </AppButton>
-        </Card.Content>
-      </Card>
+              <Text style={styles.sectionHeader}>Role Selection</Text>
+              <Dropdown
+                style={[styles.dropdown, isFocus && { borderColor: '#001F3F' }]}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                iconStyle={styles.iconStyle}
+                data={roles}
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder={!isFocus ? 'Select Role' : '...'}
+                value={role}
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                onChange={item => {
+                  setRole(item.value);
+                  setIsFocus(false);
+                }}
+              />
+
+              {loading ? (
+                <ActivityIndicator
+                  animating={true}
+                  color="#001F3F"
+                  size="large"
+                  style={{ marginTop: 20 }}
+                />
+              ) : (
+                <AppButton
+                  style={styles.registerButton}
+                  labelStyle={styles.registerButtonLabel}
+                  onPress={doRegister}
+                >
+                  Register
+                </AppButton>
+              )}
+
+              <View style={styles.footerRow}>
+                <Text style={styles.footerText}>Already have an account?</Text>
+                <AppButton
+                  mode="text"
+                  onPress={() => navigation.navigate('Login')}
+                  labelStyle={styles.loginLink}
+                >
+                  Log In
+                </AppButton>
+              </View>
+
+            </Card.Content>
+          </Card>
+
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -118,60 +159,119 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#E9F5FF",
-    paddingHorizontal: 20,
-    justifyContent: "center",
+    backgroundColor: "#001F3F", // Midnight Blue
   },
-  headerRow: {
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    padding: 24,
+    paddingTop: 40,
+  },
+
+  /* Header */
+  headerContainer: {
+    alignItems: "center",
+    marginBottom: 32,
+  },
+  iconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#FFD700', // Soft Gold
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  appTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#fff",
+  },
+  tagline: {
+    fontSize: 14,
+    color: "#FFD700", // Gold
+    marginTop: 4,
+    fontWeight: "600",
+    letterSpacing: 1,
+  },
+
+  /* Card */
+  card: {
+    borderRadius: 24,
+    backgroundColor: "#fff",
+    elevation: 8,
+  },
+  cardContent: {
+    paddingVertical: 24,
+    paddingHorizontal: 12,
+  },
+  input: {
+    backgroundColor: '#F7F9FC',
+  },
+  sectionHeader: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#888',
+    textTransform: 'uppercase',
+    marginBottom: 10,
+    marginTop: 6,
+  },
+
+  /* Dropdown */
+  dropdown: {
+    height: 50,
+    borderColor: '#E0E0E0',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    backgroundColor: '#F7F9FC',
+    marginBottom: 20,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+    color: '#999',
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+    color: '#333',
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+
+  /* Buttons */
+  registerButton: {
+    marginTop: 10,
+    backgroundColor: "#001F3F",
+    borderRadius: 12,
+    paddingVertical: 6,
+  },
+  registerButtonLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: "#FFD700",
+  },
+
+  /* Footer */
+  footerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 25,
+    marginTop: 20,
   },
-  logo: {
-    width: 45,
-    height: 45,
-    borderRadius: 6,
-    marginRight: 10,
-  },
-  smartHealth: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: "#0A4D68",
-  },
-  card: {
-    borderRadius: 22,
-    backgroundColor: "#FFFFFFEE",
-    elevation: 8,
-    paddingVertical: 10,
-  },
-  screenTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 6,
-    color: "#0A4D68",
-  },
-  subtitle: {
-    textAlign: "center",
+  footerText: {
+    fontSize: 15,
     color: "#555",
-    marginBottom: 18,
   },
-  label: {
-    marginTop: 12,
-    marginBottom: 6,
-    fontWeight: "700",
-    color: "#333",
+  loginLink: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#001F3F",
   },
-  dropdown: {
-    borderWidth: 1,
-    borderColor: "#B5C6D6",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 50,
-    backgroundColor: "#fff",
-    marginBottom: 14,
-  },
-  placeholderStyle: { color: "#999" },
-  selectedTextStyle: { color: "#000", fontSize: 16 },
 });

@@ -1,0 +1,19 @@
+{
+    "login": "লগ ইন",
+    "register": "নিবন্ধন করুন",
+    "email": "ইমেল",
+    "password": "পাসওয়ার্ড",
+    "dashboard": "ড্যাশবোর্ড",
+    "report_symptoms": "লক্ষণ রিপোর্ট করুন",
+    "report_water_test": "জল পরীক্ষা",
+    "alerts": "সতর্কতা",
+    "offline_queue": "অফলাইন সারি",
+    "settings": "সেটিংস",
+    "help": "সাহায্য এবং স্বাস্থ্যবিধি",
+    "name": "নাম",
+    "age": "বয়স",
+    "gender": "লিঙ্গ",
+    "symptoms": "লক্ষণ",
+    "submit": "জমা দিন",
+    "send_sms": "এসএমএস পাঠান"
+}

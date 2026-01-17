@@ -36,7 +36,9 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 %ProgramData%/
+# Environment variables (contains secrets)
 .env
+server/.env
 .firebaserc
 # generated native folders
 /ios

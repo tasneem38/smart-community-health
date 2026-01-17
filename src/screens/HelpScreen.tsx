@@ -1,233 +1,295 @@
-import React from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { Text, Card } from "react-native-paper";
+import React, { useState } from "react";
+import { ScrollView, StyleSheet, View, Linking, TouchableOpacity } from "react-native";
+import { Text, Card, List, Button, Divider, Avatar } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function HelpScreen() {
+  const [expandedSection, setExpandedSection] = useState<string | null>("guide");
+
+  const handlePress = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  const callNumber = (number: string) => {
+    Linking.openURL(`tel:${number}`);
+  };
+
   return (
-    <ScrollView style={styles.container}>
-
-      {/* HEADER */}
-      <Text style={styles.title}>Help & Hygiene Awareness</Text>
-      <Text style={styles.subtitle}>
-        Everything you need to stay safe and report effectively.
-      </Text>
-
-      {/* ABOUT SECTION */}
-      <SectionCard
-        title="About Smart Health"
-        icon="information-outline"
-        content={[
-          "Smart Health helps detect early symptoms of water-borne diseases in rural communities.",
-          "It supports ASHA workers, clinics, and community reporters."
-        ]}
-      />
-
-      {/* HOW TO USE SECTION */}
-      <SectionHeader title="How to Use the App" />
-
-      <SectionCard
-        title="Dashboard"
-        icon="view-dashboard"
-        content={[
-          "View role-based options.",
-          "Submit reports, check alerts, manage settings."
-        ]}
-      />
-      <SectionCard
-        title="Report Symptoms"
-        icon="clipboard-list-outline"
-        content={[
-          "Record patient symptoms, age, gender, location, and photos.",
-          "Used to detect early outbreaks."
-        ]}
-      />
-      <SectionCard
-        title="Water Quality Test"
-        icon="water-check"
-        content={[
-          "Submit water pH, turbidity, bacterial presence, and GPS location.",
-          "Helps identify unsafe water sources."
-        ]}
-      />
-      <SectionCard
-        title="Alerts"
-        icon="alert-outline"
-        content={[
-          "View local health alerts and outbreak warnings.",
-          "Mark alerts as read."
-        ]}
-      />
-      <SectionCard
-        title="Offline Queue"
-        icon="cloud-off-outline"
-        content={[
-          "Reports sync automatically when internet returns."
-        ]}
-      />
-
-      {/* HYGIENE SECTION */}
-      <SectionHeader title="Hygiene & Safety Tips" />
-
-      <SectionCard
-        title="Safe Drinking Water"
-        icon="cup-water"
-        content={[
-          "Always boil water for 3 minutes before drinking.",
-          "Cover water storage containers.",
-          "Avoid using unclean wells or tanks."
-        ]}
-      />
-      <SectionCard
-        title="Personal Hygiene"
-        icon="hand-wash"
-        content={[
-          "Wash hands before eating.",
-          "Keep nails clean.",
-          "Avoid open defecation; use proper toilets."
-        ]}
-      />
-      <SectionCard
-        title="Food Safety"
-        icon="food"
-        content={[
-          "Eat freshly cooked food.",
-          "Wash fruits and vegetables well.",
-          "Avoid street food during outbreaks."
-        ]}
-      />
-
-      {/* WHEN TO SEEK HELP */}
-      <SectionHeader title="When to Seek Medical Help" />
-
-      <SectionCard
-        title="Seek immediate help if:"
-        icon="hospital"
-        content={[
-          "Severe dehydration.",
-          "High fever.",
-          "Blood in stool.",
-          "Persistent vomiting.",
-          "Dizziness or confusion."
-        ]}
-      />
-
-      {/* EMERGENCY CONTACTS */}
-      <SectionHeader title="Emergency Contacts" />
-
-      <SectionCard
-        title="Important Numbers"
-        icon="phone"
-        content={[
-          "Local Health Center — 108",
-          "Ambulance — 112",
-          "ASHA Supervisor — 8765493265",
-          "Water Department — 5674986432"
-        ]}
-      />
-
-      {/* SUPPORT */}
-      <SectionHeader title="Support" />
-
-      <SectionCard
-        title="Need Technical Help?"
-        icon="lifebuoy"
-        content={[
-          "Contact your supervisor or regional health coordinator.",
-          "Report app issues via your support channel."
-        ]}
-      />
-
-    </ScrollView>
-  );
-}
-
-/* ------------------------- COMPONENTS ------------------------- */
-
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <Text style={styles.sectionHeader}>{title}</Text>
-  );
-}
-
-function SectionCard({
-  title,
-  icon,
-  content,
-}: {
-  title: string;
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
-  content: string[];
-}) {
-  return (
-    <Card style={styles.card} mode="elevated">
-      <Card.Title
-        title={title}
-        titleStyle={styles.cardTitle}
-        left={() => (
-          <View style={styles.iconContainer}>
-            <MaterialCommunityIcons name={icon} size={26} color="#fff" />
+    <View style={styles.container}>
+      {/* -------------------------------------------
+          HEADER
+      -------------------------------------------- */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.headerTitle}>Help Center</Text>
+            <Text style={styles.headerSubtitle}>Hygiene, Safety & Support</Text>
           </View>
-        )}
-      />
-      <Card.Content>
-        {content.map((line, idx) => (
-          <Text key={idx} style={styles.cardText}>
-            • {line}
+          <View style={styles.headerIconCircle}>
+            <MaterialCommunityIcons name="lifebuoy" size={32} color="#001F3F" />
+          </View>
+        </View>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+
+        {/* -------------------------------------------
+            EMERGENCY SECTION (Prominent)
+        -------------------------------------------- */}
+        <Card style={styles.emergencyCard}>
+          <Card.Content>
+            <View style={styles.emergencyHeader}>
+              <MaterialCommunityIcons name="ambulance" size={28} color="#D32F2F" />
+              <Text style={styles.emergencyTitle}>Emergency Contacts</Text>
+            </View>
+            <Divider style={{ marginVertical: 10 }} />
+            <View style={styles.contactRow}>
+              <ContactButton label="Ambulance" number="108" onPress={() => callNumber('108')} />
+              <ContactButton label="Health Center" number="104" onPress={() => callNumber('104')} />
+            </View>
+            <View style={[styles.contactRow, { marginTop: 10 }]}>
+              <ContactButton label="Supervisor" number="8765493265" onPress={() => callNumber('8765493265')} outline />
+            </View>
+          </Card.Content>
+        </Card>
+
+        {/* -------------------------------------------
+            ACCORDION SECTIONS
+        -------------------------------------------- */}
+        <List.Section style={styles.accordionSection}>
+
+          {/* USER GUIDE */}
+          <List.Accordion
+            title="App Guide"
+            left={props => <List.Icon {...props} icon="cellphone-information" color="#001F3F" />}
+            expanded={expandedSection === 'guide'}
+            onPress={() => handlePress('guide')}
+            style={styles.accordionHeader}
+            titleStyle={styles.accordionTitle}
+          >
+            <InfoItem text="Use 'Report Symptoms' to log potential disease cases in your village." />
+            <InfoItem text="Submit 'Water Tests' to track pH and turbidity levels of local sources." />
+            <InfoItem text="Check 'Alerts' daily for outbreak warnings in your area." />
+          </List.Accordion>
+
+          <Divider />
+
+          {/* HYGIENE TIPS */}
+          <List.Accordion
+            title="Hygiene & Safety"
+            left={props => <List.Icon {...props} icon="hand-wash" color="#001F3F" />}
+            expanded={expandedSection === 'hygiene'}
+            onPress={() => handlePress('hygiene')}
+            style={styles.accordionHeader}
+            titleStyle={styles.accordionTitle}
+          >
+            <InfoItem text="Boil water for at least 3 minutes before drinking." />
+            <InfoItem text="Wash hands with soap before meals and after using the toilet." />
+            <InfoItem text="Keep water storage containers covered and clean." />
+          </List.Accordion>
+
+          <Divider />
+
+          {/* SYMPTOM AWARENESS */}
+          <List.Accordion
+            title="When to Seek Help"
+            left={props => <List.Icon {...props} icon="hospital-box" color="#D32F2F" />}
+            expanded={expandedSection === 'symptoms'}
+            onPress={() => handlePress('symptoms')}
+            style={styles.accordionHeader}
+            titleStyle={styles.accordionTitle}
+          >
+            <InfoItem text="High Fever (>102°F) persisting for more than 2 days." icon="thermometer-alert" color="#D32F2F" />
+            <InfoItem text="Severe Dehydration (dry mouth, no urine)." icon="water-off" color="#D32F2F" />
+            <InfoItem text="Difficulty Breathing or Chest Pain." icon="heart-pulse" color="#D32F2F" />
+          </List.Accordion>
+
+        </List.Section>
+
+        {/* -------------------------------------------
+            SUPPORT INFO
+        -------------------------------------------- */}
+        <View style={styles.supportBox}>
+          <MaterialCommunityIcons name="email-outline" size={24} color="#666" />
+          <Text style={styles.supportText}>
+            For technical issues, contact <Text style={{ fontWeight: 'bold' }}>support@smarthealth.org</Text>
           </Text>
-        ))}
-      </Card.Content>
-    </Card>
+        </View>
+
+      </ScrollView>
+    </View>
   );
 }
 
-/* --------------------------- STYLES --------------------------- */
+function ContactButton({ label, number, onPress, outline }: any) {
+  return (
+    <TouchableOpacity
+      style={[
+        styles.contactBtn,
+        outline && styles.contactBtnOutline
+      ]}
+      onPress={onPress}
+    >
+      <MaterialCommunityIcons
+        name="phone"
+        size={18}
+        color={outline ? "#001F3F" : "#fff"}
+        style={{ marginRight: 8 }}
+      />
+      <View>
+        <Text style={[styles.contactBtnText, outline && { color: "#001F3F" }]}>{label}</Text>
+        <Text style={[styles.contactBtnSub, outline && { color: "#555" }]}>{number}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function InfoItem({ text, icon = "check-circle-outline", color = "#555" }: any) {
+  return (
+    <View style={styles.infoRow}>
+      <MaterialCommunityIcons name={icon} size={20} color={color} style={{ marginRight: 12, marginTop: 2 }} />
+      <Text style={styles.infoText}>{text}</Text>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: "#F7F9FC",
+  },
+  scrollContent: {
     padding: 16,
-    backgroundColor: "#F2FAFF",
+    paddingBottom: 40,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    textAlign: "center",
-    color: "#0A4D68",
-    marginTop: 10,
-  },
-  subtitle: {
-    textAlign: "center",
-    color: "#555",
-    marginBottom: 20,
-  },
-  sectionHeader: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginTop: 24,
-    marginBottom: 10,
-    color: "#0A4D68",
-  },
-  card: {
-    borderRadius: 16,
-    marginBottom: 14,
-    backgroundColor: "#FFFFFF",
+
+  /* HEADER */
+  headerContainer: {
+    backgroundColor: '#001F3F',
+    paddingTop: 50,
+    paddingBottom: 25,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     elevation: 5,
   },
-  cardTitle: {
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#FFD700',
+    marginTop: 4,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  headerIconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFD700',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
+
+  /* EMERGENCY CARD */
+  emergencyCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginBottom: 20,
+    marginTop: 10,
+    borderLeftWidth: 5,
+    borderLeftColor: '#D32F2F',
+    elevation: 4,
+  },
+  emergencyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  emergencyTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: '700',
+    color: '#D32F2F',
+    marginLeft: 10,
   },
-  cardText: {
-    fontSize: 15,
-    marginVertical: 3,
-    color: "#444",
+  contactRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
   },
-  iconContainer: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: "#0A4D68",
-    justifyContent: "center",
-    alignItems: "center",
+  contactBtn: {
+    flex: 1,
+    backgroundColor: '#D32F2F',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  contactBtnOutline: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#001F3F',
+  },
+  contactBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  contactBtnSub: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 11,
+  },
+
+  /* ACCORDION */
+  accordionSection: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 2,
+  },
+  accordionHeader: {
+    backgroundColor: '#fff',
+    paddingVertical: 4,
+  },
+  accordionTitle: {
+    color: '#001F3F',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#FAFAFA',
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#555',
+    flex: 1,
+    lineHeight: 20,
+  },
+
+  /* SUPPORT */
+  supportBox: {
+    marginTop: 30,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  supportText: {
+    marginLeft: 8,
+    color: '#666',
+    fontSize: 14,
   },
 });

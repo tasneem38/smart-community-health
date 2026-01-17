@@ -7,7 +7,13 @@ import RegisterScreen from "../screens/Auth/RegisterScreen";
 
 import BottomTabs from "./BottomTabs";
 import HelpScreen from "../screens/HelpScreen";
-import SymptomCheckerScreen from "../screens/SymptomCheckerScreen";
+import HelpingHandScreen from "../screens/HelpScreen";
+import SymptomCheckerScreen from "../screens/asha/SymptomCheckerScreen";
+import SymptomReportScreen from "../screens/asha/SymptomReportScreen";
+import WaterTestReportScreen from "../screens/asha/WaterTestReportScreen";
+import AssistanceRequestsScreen from "../screens/asha/AssistanceRequestsScreen";
+import AlertsScreen from "../screens/asha/AlertsScreen";
+import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen";
 
 import { AuthContext } from "../store/authContext";
 
@@ -20,9 +26,15 @@ import ClinicHealthInsightsScreen from "../screens/clinic/ClinicHealthInsightsSc
 import ClinicOfflineQueueScreen from "../screens/clinic/ClinicOfflineQueueScreen";
 import ClinicPendingReviewsScreen from "../screens/clinic/ClinicPendingReviewsScreen";
 
+/* LOCALITE SCREENS */
+import LocaliteReportSymptomsScreen from '../screens/localite/LocaliteReportSymptomsScreen';
+import LocaliteWaterStatusScreen from '../screens/localite/LocaliteWaterStatusScreen';
+import LocaliteRequestAssistanceScreen from '../screens/localite/LocaliteRequestAssistanceScreen';
+
 /* NEW — AI Insights Dashboard */
 import ClinicAIInsightsScreen from "../screens/clinic/AIInsightsScreen";
 
+/* NEW — Clinic Summary Generator */
 /* NEW — Clinic Summary Generator */
 import ClinicSummaryGeneratorScreen from "../screens/clinic/ClinicSummaryGeneratorScreen";
 
@@ -33,10 +45,18 @@ export type RootStackParamList = {
 
   MainTabs: undefined;
   LocaliteTabs: undefined;
-
+  LocaliteReport: undefined;
+  WaterStatus: undefined;
+  Assistance: undefined;
   Help: undefined;
   SymptomChecker: undefined;
   SummaryGenerator: undefined;
+
+  SymptomReport: undefined;
+  WaterTestReport: undefined;
+  AssistanceRequests: undefined;
+  Alerts: undefined;
+  PrivacyPolicy: undefined;
 
   ClinicAlerts: undefined;
   ClinicPendingReviews: undefined;
@@ -45,7 +65,7 @@ export type RootStackParamList = {
   ClinicAssignFollowup: undefined;
 
   ClinicAIInsights: undefined;
-  ClinicSummaryGenerator: undefined;   // 🔥 ADDED
+  ClinicSummaryGenerator: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -60,8 +80,8 @@ export default function Navigation() {
         !state.user
           ? "Home"
           : role === "LOCALITE"
-          ? "LocaliteTabs"
-          : "MainTabs"
+            ? "LocaliteTabs"
+            : "MainTabs"
       }
       screenOptions={{ headerShown: false }}
     >
@@ -81,7 +101,26 @@ export default function Navigation() {
 
           {/* LOCALITE */}
           {role === "LOCALITE" && (
-            <Stack.Screen name="LocaliteTabs" component={BottomTabs} />
+            <>
+              <Stack.Screen name="LocaliteTabs" component={BottomTabs} />
+
+              {/* Stack Screens for Localite Dashboard Navigation */}
+              <Stack.Screen
+                name="LocaliteReport"
+                component={LocaliteReportSymptomsScreen}
+                options={{ title: 'Report Symptoms', headerShown: true }}
+              />
+              <Stack.Screen
+                name="WaterStatus"
+                component={LocaliteWaterStatusScreen}
+                options={{ title: 'Water Status', headerShown: true }}
+              />
+              <Stack.Screen
+                name="Assistance"
+                component={LocaliteRequestAssistanceScreen}
+                options={{ title: 'Request Help', headerShown: true }}
+              />
+            </>
           )}
 
           {/* COMMON SCREENS */}
@@ -92,6 +131,12 @@ export default function Navigation() {
             component={SymptomCheckerScreen}
             options={{ headerShown: true }}
           />
+
+          <Stack.Screen name="SymptomReport" component={SymptomReportScreen} options={{ title: 'Report Symptoms', headerShown: true }} />
+          <Stack.Screen name="WaterTestReport" component={WaterTestReportScreen} options={{ title: 'Water Quality Test', headerShown: true }} />
+          <Stack.Screen name="AssistanceRequests" component={AssistanceRequestsScreen} options={{ title: 'Assistance Requests', headerShown: true }} />
+          <Stack.Screen name="Alerts" component={AlertsScreen} options={{ title: 'Alerts', headerShown: true }} />
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ title: 'Privacy Policy', headerShown: true }} />
 
           {/* -------- CLINIC SCREENS -------- */}
 
@@ -137,6 +182,7 @@ export default function Navigation() {
             component={ClinicSummaryGeneratorScreen}
             options={{ headerShown: true, title: "Summary Generator" }}
           />
+
         </>
       )}
     </Stack.Navigator>
