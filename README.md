@@ -21,6 +21,13 @@ A comprehensive offline-first React Native application designed for rural health
 - **Dashboard**: Monitor incoming reports and alerts.
 - **Patient Management**: Assign follow-ups and review pending cases.
 
+### 🛡️ Data Privacy & Security (DPDP Ready)
+- **Consent Management**: Explicit consent required for all sensitive health data collection.
+- **JWT Auth**: Secure, signed sessions with data minimization to protect user identity.
+- **Audit Logs**: Verifiable logs of data access and modifications for accountability.
+- **Automatic Deletion**: Secure purging of temporary on-device media after sync.
+- **Erasure Flow**: Built-in support for "Right to be Forgotten" data deletion requests.
+
 ## 🎨 UI & Design
 - **Premium Aesthetic**: "Midnight Blue & Gold" theme for a professional, trustworthy look.
 - **Localized**: Full translation support (English default).

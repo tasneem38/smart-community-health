@@ -69,6 +69,16 @@ export default function LocaliteHomeScreen({ navigation }: any) {
         />
 
         <ActionItem
+          title="Health Assistant"
+          desc="Ask health questions in your language"
+          icon="robot-happy"
+          color="#673AB7"
+          onPress={() => navigation.navigate("LocaliteChat")}
+        />
+
+
+
+        <ActionItem
           title="Request Assistance"
           desc="Get help from an ASHA worker"
           icon="hand-heart"
@@ -121,7 +131,7 @@ const styles = StyleSheet.create({
   },
   welcomeLabel: {
     fontSize: 14,
-    color: '#FFD700', // Gold
+    color: '#FFD700', // Soft Gold
     fontWeight: '600',
     textTransform: 'uppercase',
   },
@@ -134,7 +144,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#FFD700',
+    backgroundColor: '#FFD700', // Soft Gold
     justifyContent: 'center',
     alignItems: 'center',
   },

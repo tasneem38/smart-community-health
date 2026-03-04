@@ -4,7 +4,8 @@ import { TextInput, Button, Text, Card, ActivityIndicator } from "react-native-p
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { askGroq } from "../../api/aiService";
 import { AuthContext } from "../../store/authContext";
-import { saveSummaryAIResult } from "../../api/firebase/aiRecords";
+import { saveAiRecord } from "../../api/api";
+import { useTranslation } from "react-i18next";
 
 export default function ClinicSummaryGeneratorScreen() {
   const { state } = useContext(AuthContext);
@@ -50,11 +51,14 @@ Report:
 
       // Save AI result (for clinic analytics / audit)
       try {
-        await saveSummaryAIResult(
-          inputText,        // input text
-          cleaned,          // output summary
-          userId || "unknown"  // user ID
-        );
+        await saveAiRecord({
+          type: "clinic_summary",
+          content: cleaned,
+          metadata: {
+            originalText: inputText,
+            userId: userId || "unknown"
+          }
+        });
       } catch (saveErr) {
         console.warn("Failed to save AI summary:", saveErr);
       }

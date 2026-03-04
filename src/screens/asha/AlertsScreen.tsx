@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 // @ts-ignore
 import { API_URL } from '../../api/postgres/client';
 import { AuthContext } from '../../store/authContext';
-import { fetchAlertsFromFirebase } from "../../api/firebase/database";
+import { fetchAlerts } from "../../api/api";
 import { getAlertsFromDB, addAlert } from "../../db/db";
 import AlertCard from "../../components/AlertCard";
 
@@ -25,7 +25,7 @@ export default function AlertsScreen() {
   const loadAlerts = async () => {
     if (!refreshing) setLoading(true);
     try {
-      const remote = await fetchAlertsFromFirebase();
+      const remote = await fetchAlerts();
       if (remote && remote.length > 0) {
         remote.forEach((a: any) => addAlert({ ...a, read: a.read ? 1 : 0 }));
       }

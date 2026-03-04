@@ -3,12 +3,9 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Card, Text, ProgressBar, ActivityIndicator } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { getFirestore, collection, getDocs } from "firebase/firestore";
-import { app } from "../../api/firebase/config";
+import { fetchAnalytics, fetchDetailedAnalytics } from "../../api/api";
 
 export default function ClinicHealthInsightsScreen() {
-  const db = getFirestore(app);
-
   const [loading, setLoading] = useState(true);
   const [choleraRisk, setCholeraRisk] = useState(0);
   const [typhoidRisk, setTyphoidRisk] = useState(0);
@@ -23,29 +20,22 @@ export default function ClinicHealthInsightsScreen() {
     try {
       setLoading(true);
 
-      // Fetch all symptom reports
-      const symSnap = await getDocs(collection(db, "symptomReports"));
-      const symptomData = symSnap.docs.map((d) => d.data());
+      const stats = await fetchAnalytics();
+      setSymptomCount(stats.symptomReports || 0);
+      setPendingReviews(stats.pendingAssistance || 0); // Using assistance requests as proxy for pending work
 
-      // Total symptom reports
-      setSymptomCount(symptomData.length);
+      const detailed: any = await fetchDetailedAnalytics();
+      const patterns = detailed.symptomPatterns || [];
 
-      // Pending clinic reviews
-      const pending = symptomData.filter((s: any) => !s.reviewed).length;
-      setPendingReviews(pending);
+      // Heuristic: Check for specific keywords in symptom patterns
+      // Note: This relies on the symptom names being consistent with what is saved (e.g. "Severe Diarrhea")
+      const diarrheaCount = patterns.find((p: any) => p.symptom.includes("Diarrhea"))?.count || 0;
+      const feverCount = patterns.find((p: any) => p.symptom.includes("Fever"))?.count || 0;
 
-      // Disease estimation from symptom codes
-      const choleraCases = symptomData.filter((s: any) =>
-        s.symptoms?.includes("C")
-      ).length;
+      // Scale risk based on count (arbitrary threshold for demo)
+      setCholeraRisk(Math.min(diarrheaCount / 5, 1));
+      setTyphoidRisk(Math.min(feverCount / 5, 1));
 
-      const typhoidCases = symptomData.filter((s: any) =>
-        s.symptoms?.includes("T")
-      ).length;
-
-      // Convert into scale 0 → 1 for progress bars
-      setCholeraRisk(Math.min(choleraCases / 10, 1));
-      setTyphoidRisk(Math.min(typhoidCases / 10, 1));
     } catch (err) {
       console.log("Error loading insights:", err);
     } finally {

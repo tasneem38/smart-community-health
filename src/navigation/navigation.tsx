@@ -30,6 +30,8 @@ import ClinicPendingReviewsScreen from "../screens/clinic/ClinicPendingReviewsSc
 import LocaliteReportSymptomsScreen from '../screens/localite/LocaliteReportSymptomsScreen';
 import LocaliteWaterStatusScreen from '../screens/localite/LocaliteWaterStatusScreen';
 import LocaliteRequestAssistanceScreen from '../screens/localite/LocaliteRequestAssistanceScreen';
+import LocaliteChatScreen from '../screens/localite/LocaliteChatScreen';
+import HelplineCallScreen from '../screens/localite/HelplineCallScreen';
 
 /* NEW — AI Insights Dashboard */
 import ClinicAIInsightsScreen from "../screens/clinic/AIInsightsScreen";
@@ -66,6 +68,10 @@ export type RootStackParamList = {
 
   ClinicAIInsights: undefined;
   ClinicSummaryGenerator: undefined;
+  RecentWaterTests: undefined;
+  WaterTestDetails: { test: any };
+  LocaliteChat: undefined;
+  HelplineCall: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -119,6 +125,15 @@ export default function Navigation() {
                 name="Assistance"
                 component={LocaliteRequestAssistanceScreen}
                 options={{ title: 'Request Help', headerShown: true }}
+              />
+              <Stack.Screen
+                name="LocaliteChat"
+                component={LocaliteChatScreen}
+              />
+              <Stack.Screen
+                name="HelplineCall"
+                component={HelplineCallScreen}
+                options={{ headerShown: false }}
               />
             </>
           )}
@@ -181,6 +196,18 @@ export default function Navigation() {
             name="ClinicSummaryGenerator"
             component={ClinicSummaryGeneratorScreen}
             options={{ headerShown: true, title: "Summary Generator" }}
+          />
+
+          <Stack.Screen
+            name="RecentWaterTests"
+            component={require("../screens/asha/AshaRecentWaterTestsScreen").default}
+            options={{ headerShown: true, title: "Recent Water Tests" }}
+          />
+
+          <Stack.Screen
+            name="WaterTestDetails"
+            component={require("../screens/asha/AshaWaterTestDetailsScreen").default}
+            options={{ headerShown: true, title: "Test Details" }}
           />
 
         </>

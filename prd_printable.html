@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRD - Smart Community Health</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+            background-color: #f6f8fa;
+        }
+
+        .markdown-body {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 767px) {
+            body {
+                padding: 15px;
+            }
+
+            .markdown-body {
+                padding: 20px;
+            }
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .markdown-body {
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        .header-msg {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ffeeba;
+            font-family: sans-serif;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="no-print header-msg">
+        <strong>🖨️ PDF Export Guide:</strong> Open this file in your browser (Chrome/Edge/Safari), press <strong>Ctrl +
+            P</strong> (or Cmd + P), and select <strong>"Save as PDF"</strong>. Under "More Settings", ensure
+        "Background Graphics" is checked for the best look.
+    </div>
+
+    <article id="content" class="markdown-body">
+        <!-- Markdown content will be rendered here -->
+    </article>
+
+    <script>
+        const markdownContent = `
+# Product Requirements Document (PRD): Smart Community Health
+
+---
+
+## 1. Executive Summary
+**Smart Community Health** is a comprehensive, AI-driven digital health ecosystem designed for rural and tribal communities, specifically tailored for the North East India context. The platform bridges the gap between villagers ("Localites"), frontline community health workers ("ASHA"), and formal healthcare facilities ("Clinics") to enable proactive disease surveillance, water quality monitoring, and immediate health assistance.
+
+---
+
+## 2. Design Architecture
+
+The system follows a hub-and-spoke model where the Mobile App (Edge) acts as the primary data collector, syncing to a Central Server (Cloud) which orchestrates AI and Analytics.
+
+### 2.1. System Overview
+<div class="mermaid">
+graph TD
+    subgraph "Mobile App (Edge)"
+        L[Localite UI]
+        A[ASHA UI]
+        DB[(SQLite Queue)]
+    end
+
+    subgraph "Backend Server (Cloud)"
+        API[Express API]
+        PG[(PostgreSQL)]
+        Worker[Alert Engine]
+    end
+
+    subgraph "AI Engines"
+        Sarvam[Sarvam AI: Voice/Chat]
+        Groq[Groq: Analysis/Triage]
+    end
+
+    L <--> API
+    A <--> API
+    API <--> PG
+    API <--> Sarvam
+    API <--> Groq
+    API <--> DB
+</div>
+
+### 2.2. Component Interaction
+1.  **Offline-First**: Mobile apps interact with a local **SQLite** queue when internet is unavailable.
+2.  **API Gateway**: A **Node.js/Express** server handles authentication, data validation, and AI orchestration.
+3.  **Surveillance Engine**: A background worker analyzes incoming reports to detect clusters and trigger alerts.
+
+---
+
+## 3. Database Schema
+
+### 3.1. Central Database (PostgreSQL)
+The core source of truth for all health and environmental data.
+
+| Table | Purpose | Key Columns |
+| :--- | :--- | :--- |
+| **users** | Auth & Profiles | id, name, email, village, role |
+| **symptom_reports** | Public Health Data | village, symptoms, location, photo_url |
+| **water_tests** | Env Quality | source_type, ph, turbidity, h2s, chlorine |
+| **alerts** | Notification Hub | title, type, risk, village, read |
+| **assistance_requests**| Citizen Help Desk | description, audio_url, solutions (AI) |
+| **sarvam_chats** | AI Chat Logs | user_id, role, content, timestamp |
+
+### 3.2. Mobile Cache (SQLite)
+Used for data integrity in zero-connectivity zones.
+-   **Table \`queue\`**: Stores pending uploads (WATER_TEST/SYMPTOM).
+-   **Table \`alerts\`**: Local cache for offline reading.
+
+---
+
+## 4. Key Workflows
+
+### 4.1. The Digital Water Safety Workflow
+1.  **Test**: ASHA worker performs a field chemical test.
+2.  **Entry**: Data entered into **WaterTestReportScreen**.
+3.  **Propagation**: 
+    -   If Turbidity or H2S is "Unsafe", system generates an alert.
+    -   Village dashboard for Localites updates immediately upon server sync.
+
+### 4.2. Voice Health Assistant (Simran)
+<div class="mermaid">
+sequenceDiagram
+    participant U as User (Mobile)
+    participant S as Server (Node)
+    participant AI as Sarvam AI
+    
+    U->>S: POST /api/sarvam/stt (Audio File)
+    S->>AI: Transcribe (saaras:v3)
+    AI-->>S: "My child has a fever"
+    S->>AI: LLM Generate Response (sarvam-m)
+    AI-->>S: "Keep him hydrated. I've alerted your ASHA."
+    S->>AI: Text-to-Speech (bulbul:v3)
+    AI-->>S: Base64 Audio (Simran's Voice)
+    S-->>U: Text + Audio Stream
+</div>
+
+### 4.3. Offline Synchronization Workflow
+-   **Check**: App uses \`NetInfo\` to detect connectivity.
+-   **Queue**: If offline, data is persisted to SQLite with a \`pending\` status.
+-   **Auto-Sync**: Upon re-connection, background process hits API and cleans queue.
+
+### 4.4. IVR Health Helpline (In-App Call Agent)
+A simulated Interactive Voice Response (IVR) helpline that provides localites with immediate access to an ASHA worker through a phone-call–like experience.
+
+#### Call Flow
+<div class="mermaid">
+sequenceDiagram
+    participant U as Localite (Mobile)
+    participant App as HelplineCallScreen
+    participant TTS as Sarvam TTS
+    participant Phone as Native Dialer
+    participant S as Server
+
+    U->>App: Tap "Call Health Helpline"
+    App->>App: Ringing Animation (2.5s)
+    App->>TTS: "Welcome to Smart Health Helpline"
+    TTS-->>App: Audio (Simran)
+    App->>U: Language Selection (EN / HI / AS)
+    U->>App: Select Language
+    App->>TTS: "Connecting to ASHA worker..."
+    TTS-->>App: Confirmation Audio
+    App->>Phone: Linking.openURL(tel:ASHA)
+    Phone-->>App: Call ended / unavailable
+    App->>TTS: "Worker unavailable. Tap to notify."
+    
+    alt User taps Notify (within 7s)
+        U->>App: Tap "Notify"
+        App->>S: POST /api/helpline/urgent
+        S->>S: Create urgent alert + request
+        App->>TTS: "ASHA worker notified."
+    else No response (7s timeout)
+        App->>TTS: "Thank you. Goodbye."
+        App->>App: Auto-end call
+    end
+</div>
+
+#### Technical Approach: Hybrid IVR Architecture
+
+**Why not make calls directly within the app?**
+
+Making true VoIP (Voice over IP) calls from within a React Native app requires:
+-   **Native telephony SDKs** (Twilio Voice, Exotel, Knowlarity) that are incompatible with Expo Go.
+-   **Custom native builds** — ejecting from Expo managed workflow or using EAS Build.
+-   **Paid API subscriptions** — Twilio charges per-minute; Exotel requires monthly plans.
+-   **Server-side call orchestration** — WebSocket/SIP infrastructure to manage call routing.
+
+These requirements make direct in-app calling impractical for a community health project targeting low-resource settings.
+
+**Why the hybrid approach works:**
+
+Our architecture mirrors how industry-standard apps (Ola, Swiggy, banking helplines) handle telephony:
+
+| Layer | Implementation | Benefit |
+| :--- | :--- | :--- |
+| **IVR Simulation** | In-app UI + Sarvam TTS | Multilingual voice prompts, no telephony cost |
+| **Actual Call** | \`Linking.openURL(tel:)\` | Uses native dialer, works on all devices |
+| **Fallback** | Server urgent alert | Ensures no request is lost |
+
+This achieves the same user experience as a real IVR system while remaining:
+-   **Zero-cost** — No telephony API charges
+-   **Expo-compatible** — No native module ejection
+-   **Offline-resilient** — Fallback works even if call fails
+
+---
+
+## 5. Functional Deep-Dive
+
+### 5.1. Localite Module
+-   **AI Triage**: Uses **Groq (Llama-3)** to analyze symptoms in requests. Generates 3-5 immediate safety tips.
+-   **History**: Chat memory is stored in \`sarvam_chats\`, allowing Simran to remember patient context across sessions.
+-   **Health Helpline**: One-tap IVR call experience with language selection, ASHA worker connection, and urgent callback fallback.
+
+### 5.2. ASHA Module
+-   **Infection Cluster Logic**: Triggers alerts if a village reports >5 cases within 72 hours.
+-   **Digital Kit**: Replaces paper logbooks with validated field kit entry.
+-   **Urgent Helpline Alerts**: Receives high-priority notifications when a localite requests an urgent callback via the helpline.
+
+---
+
+## 6. Technical Stack Details
+-   **Frontend**: React Native (Expo), react-native-paper, expo-av.
+-   **Backend**: Node.js/Express, PostgreSQL, sarvam-sdk.
+-   **AI**: Sarvam AI (Conversational Voice + TTS/STT) + Groq (Health Intelligence).
+-   **Telephony**: Hybrid IVR (In-app Sarvam TTS + Native Dialer via React Native Linking).
+
+---
+
+## 7. Design Asset Prompts
+
+**1. Full System Architecture:** Plain/professional flat design, minimalist icons, navy blue palette.
+**2. Voice AI Workflow:** Simple flow diagram, corporate aesthetic, clear connectivity arrows.
+        `;
+
+        // Render Markdown
+        document.getElementById('content').innerHTML = marked.parse(markdownContent);
+
+        // Initialize Mermaid
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+</body>
+
+</html>

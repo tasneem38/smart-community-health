@@ -14,7 +14,8 @@ import AppInput from "../../components/AppInput";
 import AppButton from "../../components/AppButton";
 
 import { addToQueue } from "../../db/db";
-import { uploadImage, saveSymptomReport } from "../../api/firebase/database";
+import { uploadImage } from "../../api/postgres/upload";
+import { sendSymptomReport } from "../../api/api";
 
 // -----------------------------------------------------
 // 1. SYMPTOM CATEGORIES (North India Focus)
@@ -137,14 +138,15 @@ export default function SymptomReportScreen({ navigation }: any) {
       const net = await NetInfo.fetch();
 
       // Upload photo if exists
+      // Upload photo if exists
       if (photo) {
-        // This is a shim, in real app upload and get URL
-        const url = await uploadImage(photo, `symptoms/${payload.id}.jpg`);
+        // Upload to node server
+        const url = await uploadImage(photo);
         payload.photoUrl = url;
       }
 
       if (net.isConnected) {
-        await saveSymptomReport(payload);
+        await sendSymptomReport(payload);
         Alert.alert(t('success'), t('report_success_msg'));
         navigation.goBack();
       } else {

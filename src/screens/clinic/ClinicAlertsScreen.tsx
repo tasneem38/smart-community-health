@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Card, Text, ActivityIndicator } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { fetchAlertsFromFirebase } from "../../api/firebase/database";
+import { fetchAlerts } from "../../api/api";
 import { addAlert, getAlertsFromDB } from "../../db/db";
 import { AlertRecord } from "../../types/Alerts";
 
@@ -18,7 +18,7 @@ export default function ClinicAlertsScreen() {
   const load = async () => {
     setLoading(true);
     try {
-      const remote = await fetchAlertsFromFirebase();
+      const remote = await fetchAlerts();
       if (remote && remote.length > 0) {
         // cache and then show
         for (const a of remote) {

@@ -1,45 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Text, Card } from "react-native-paper";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-import { fetchAlertsFromFirebase } from "../../api/firebase/database";
+import { Text, Card, Chip, Button, ActivityIndicator } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import { fetchAlerts } from "../../api/api";
 import { getAlertsFromDB, addAlert } from "../../db/db";
 import { AlertRecord } from "../../types/Alerts";
 
 export default function LocaliteAlertsScreen() {
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true); // Added loading state
 
   useEffect(() => {
-    loadAlerts();
+    load(); // Changed to call 'load'
   }, []);
 
-  const loadAlerts = async () => {
+  const load = async () => {
+    setLoading(true);
     try {
-      const remote = await fetchAlertsFromFirebase();
-
-      if (remote && remote.length > 0) {
-        for (const a of remote) {
-          addAlert({
-            id: a.id,
-            type: a.type,
-            description: a.description,
-            risk: a.risk,
-            timestamp: a.timestamp,
-            read: 0,
-          });
-        }
-
-        const dbAlerts = await getAlertsFromDB();
-        setAlerts(dbAlerts);
-      } else {
-        const dbAlerts = await getAlertsFromDB();
-        setAlerts(dbAlerts);
-      }
-    } catch (err) {
-      console.warn("Failed remote alerts, showing cached");
+      const remote = await fetchAlerts();
+      // Combine with local DB alerts if needed, or just use remote
+      setAlerts(remote || []);
+    } catch (e) {
+      console.warn("Failed remote alerts, showing cached", e);
       const dbAlerts = await getAlertsFromDB();
       setAlerts(dbAlerts);
+    } finally {
+      setLoading(false);
     }
   };
 

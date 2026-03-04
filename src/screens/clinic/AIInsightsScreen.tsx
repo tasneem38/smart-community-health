@@ -2,13 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View, RefreshControl } from "react-native";
 import { Card, Text, ActivityIndicator, ProgressBar, Divider } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  fetchSymptomReports,
-  fetchWaterTests,
-  aggregateHotspots,
-  aggregateWaterTrend,
-  aggregateSymptomPatterns,
-} from "../../api/firebase/analytics";
+import { fetchDetailedAnalytics } from "../../api/api";
 
 export default function AIInsightsScreen() {
   const [loading, setLoading] = useState(true);
@@ -22,22 +16,16 @@ export default function AIInsightsScreen() {
   const load = async () => {
     setLoading(true);
     try {
-      // last 30 days for symptoms, 14 days for water
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const fourteenDaysAgo = new Date();
-      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+      const data: any = await fetchDetailedAnalytics();
 
-      const [symReports, waterTests] = await Promise.all([
-        fetchSymptomReports({ sinceISO: thirtyDaysAgo.toISOString() }),
-        fetchWaterTests({ sinceISO: fourteenDaysAgo.toISOString() }),
-      ]);
+      setHotspots(data.hotspots || []);
+      setWaterTrend(data.waterTrend || []);
+      setSymptomPattern(data.symptomPatterns || []);
 
-      setTotalReports(symReports.length);
+      // Calculate total reports from hotspots or patterns as an approximation
+      const total = (data.hotspots || []).reduce((acc: number, cur: any) => acc + parseInt(cur.count), 0);
+      setTotalReports(total);
 
-      setHotspots(aggregateHotspots(symReports, 8));
-      setWaterTrend(aggregateWaterTrend(waterTests, 14));
-      setSymptomPattern(aggregateSymptomPatterns(symReports).slice(0, 8));
     } catch (err) {
       console.warn("AIInsights load error", err);
     } finally {

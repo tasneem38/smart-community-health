@@ -2,13 +2,9 @@ import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Card, Text, Button, TextInput, Snackbar } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { app } from "../../api/firebase/config";
+import { assignFollowup } from "../../api/api";
 
 export default function ClinicAssignFollowupScreen() {
-  const db = getFirestore(app);
-
   const [patient, setPatient] = useState("");
   const [task, setTask] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,11 +19,10 @@ export default function ClinicAssignFollowupScreen() {
     try {
       setLoading(true);
 
-      await addDoc(collection(db, "followups"), {
+      await assignFollowup({
         patient,
         task,
-        assignedAt: serverTimestamp(),
-        status: "pending",
+        status: "pending"
       });
 
       setSnack({ visible: true, msg: "Follow-up assigned successfully!" });

@@ -1,11 +1,19 @@
 import React, { useRef } from "react";
-import { View, StyleSheet, Dimensions, ScrollView, Image } from "react-native";
+import { View, StyleSheet, Dimensions, ScrollView, TouchableOpacity } from "react-native";
 import { Video } from "expo-av";
-import { Text, Button, Card, Avatar } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import AppButton from "../components/AppButton";
 
 const { width, height } = Dimensions.get("window");
+
+// Style Constants
+const COLORS = {
+  midnight: "#001F3F",
+  gold: "#FFD700",
+  white: "#FFFFFF",
+  gray: "#f8f9fa",
+  textGray: "#666",
+};
 
 export default function HomeScreen({ navigation }: any) {
   const scrollRef = useRef<ScrollView>(null);
@@ -22,7 +30,7 @@ export default function HomeScreen({ navigation }: any) {
       showsVerticalScrollIndicator={false}
     >
       {/* ---------------------------------------------------------
-          HERO SECTION (Full Screen)
+          HERO SECTION
       ---------------------------------------------------------- */}
       <View style={styles.heroContainer}>
         <Video
@@ -38,39 +46,32 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.overlay} />
 
         <View style={styles.heroContent}>
-          <View style={styles.logoRow}>
-            {/* Optional: Add Logo here if available */}
-            {/* <Image source={require("../../assets/images/logo.png")} style={styles.heroLogo} /> */}
-          </View>
-
-          <Text style={styles.welcomeText}>Welcome to</Text>
-          <Text style={styles.brandTitle}>Smart Health</Text>
+          <Text style={styles.brandTitle}>SMART HEALTH</Text>
           <Text style={styles.tagline}>
-            Empowering communities with AI-driven health insights and real-time monitoring.
+            Innovating healthcare for rural communities with real-time water quality testing and AI-driven insights.
           </Text>
 
           <View style={styles.buttonGroup}>
-            <AppButton
-              style={styles.mainButton}
-              onPress={() => navigation.navigate("Login")}
-            >
-              Sign In
-            </AppButton>
-            <AppButton
-              style={styles.mainButton}
+            <TouchableOpacity
+              style={styles.getStartedBtn}
               onPress={() => navigation.navigate("Register")}
             >
-              Get Started
-            </AppButton>
+              <Text style={styles.getStartedBtnText}>Get Started</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.signInBtn}
+              onPress={() => navigation.navigate("Login")}
+            >
+              <Text style={styles.signInBtnText}>Sign In</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Scroll Down Indicator */}
         <View style={styles.scrollIndicator}>
-          <Text style={{ color: '#fff', fontSize: 12, marginBottom: 4 }}>Learn More</Text>
           <MaterialCommunityIcons
             name="chevron-down"
-            size={30}
+            size={34}
             color="#fff"
             onPress={scrollToAbout}
           />
@@ -78,31 +79,25 @@ export default function HomeScreen({ navigation }: any) {
       </View>
 
       {/* ---------------------------------------------------------
-          ABOUT SECTION
+          ABOUT US SECTION
       ---------------------------------------------------------- */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>About SmartHealth</Text>
-        <View style={styles.divider} />
-
-        <Text style={styles.sectionText}>
-          SmartHealth is a next-generation platform designed to bridge the gap between rural communities and advanced healthcare technology.
-        </Text>
-        <Text style={styles.sectionText}>
-          By combining real-time water quality testing, symptom reporting, and AI-powered outbreak detection, we ensure that every citizen stays informed and protected.
-        </Text>
-
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>24/7</Text>
-            <Text style={styles.statLabel}>Monitoring</Text>
+        <View style={styles.aboutWrapper}>
+          <View style={styles.aboutTextContent}>
+            <Text style={styles.sectionTitle}>ABOUT US</Text>
+            <View style={styles.goldDivider} />
+            <Text style={styles.aboutDescription}>
+              Smart Health is an offline-first platform designed for rural health surveillance. We connect health workers and villagers to a central monitoring system with AI insights.
+            </Text>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>AI</Text>
-            <Text style={styles.statLabel}>Powered</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>100%</Text>
-            <Text style={styles.statLabel}>Secure</Text>
+          <View style={styles.aboutIllustration}>
+            <MaterialCommunityIcons name="clipboard-pulse-outline" size={100} color={COLORS.midnight} />
+            <MaterialCommunityIcons
+              name="shield-check"
+              size={30}
+              color={COLORS.gold}
+              style={{ position: 'absolute', top: 10, right: 10 }}
+            />
           </View>
         </View>
       </View>
@@ -111,54 +106,56 @@ export default function HomeScreen({ navigation }: any) {
           FEATURES SECTION
       ---------------------------------------------------------- */}
       <View style={[styles.sectionContainer, styles.altSection]}>
-        <Text style={styles.sectionTitle}>Key Features</Text>
-        <View style={[styles.divider, { backgroundColor: '#fff' }]} />
+        <Text style={[styles.sectionTitle, { textAlign: 'center' }]}>CORE FEATURES</Text>
+        <View style={[styles.goldDivider, { alignSelf: 'center' }]} />
 
         <View style={styles.featureGrid}>
           <FeatureCard
-            icon="water-check"
+            icon="clipboard-text-outline"
+            title="Symptom Reporting"
+          />
+          <FeatureCard
+            icon="water-outline"
             title="Water Quality"
-            desc="Real-time turbidity and pH testing to ensure safe drinking water."
           />
           <FeatureCard
-            icon="doctor"
-            title="Symptom Check"
-            desc="Report symptoms instantly and get AI-driven health advice."
+            icon="brain"
+            title="AI Health Checker"
           />
           <FeatureCard
-            icon="alert-decagram"
+            icon="alert-octagon-outline"
             title="Outbreak Alerts"
-            desc="Early warning system for potential disease clusters."
           />
           <FeatureCard
             icon="wifi-off"
-            title="Offline Mode"
-            desc="Works seamlessly even without internet connectivity."
+            title="Offline Support"
+          />
+          <FeatureCard
+            icon="hand-heart-outline"
+            title="Local Assistance"
           />
         </View>
       </View>
 
-      {/* ---------------------------------------------------------
-          CTA / FOOTER
-      ---------------------------------------------------------- */}
-      <View style={styles.footer}>
-        <Text style={styles.footerBrand}>SmartHealth</Text>
-        <Text style={styles.footerText}>© 2026 Smart Health Initiative.</Text>
-        <Text style={styles.footerText}>All rights reserved.</Text>
+      {/* Footer / Info Section */}
+      <View style={styles.footerInfo}>
+        <Text style={styles.footerText}>© 2026 Smart Health Initiative</Text>
       </View>
 
     </ScrollView>
   );
 }
 
-function FeatureCard({ icon, title, desc }: any) {
+function FeatureCard({ icon, title }: { icon: any; title: string }) {
   return (
     <View style={styles.featureCard}>
-      <View style={styles.featureIconBox}>
-        <MaterialCommunityIcons name={icon} size={32} color="#001F3F" />
+      <View style={styles.cardHeader} />
+      <View style={styles.cardContent}>
+        <View style={styles.iconCircle}>
+          <MaterialCommunityIcons name={icon} size={32} color={COLORS.midnight} />
+        </View>
+        <Text style={styles.cardTitle}>{title}</Text>
       </View>
-      <Text style={styles.featureTitle}>{title}</Text>
-      <Text style={styles.featureDesc}>{desc}</Text>
     </View>
   );
 }
@@ -166,185 +163,173 @@ function FeatureCard({ icon, title, desc }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
   },
 
   /* HERO */
   heroContainer: {
     width,
-    height, // Full screen
+    height: height * 0.45,
     justifyContent: "center",
     alignItems: "center",
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 31, 63, 0.65)", // Midnight Blue overlay
+    backgroundColor: "rgba(0, 31, 63, 0.7)",
   },
   heroContent: {
-    width: "100%",
-    paddingHorizontal: 24,
+    paddingHorizontal: 30,
     alignItems: "center",
   },
-  logoRow: {
-    marginBottom: 20,
-  },
-  heroLogo: {
-    width: 80,
-    height: 80,
-    resizeMode: 'contain',
-  },
-  welcomeText: {
-    color: "#FFD700", // Soft Gold
-    fontSize: 18,
-    fontWeight: "600",
-    letterSpacing: 1,
-    marginBottom: 8,
-    textTransform: "uppercase",
-  },
   brandTitle: {
-    color: "#fff",
-    fontSize: 42,
+    color: COLORS.gold,
+    fontSize: 48,
     fontWeight: "900",
-    marginBottom: 16,
+    marginBottom: 10,
+    letterSpacing: 2,
     textAlign: "center",
   },
   tagline: {
-    color: "#E0E0E0",
-    fontSize: 16,
+    color: "#fff",
+    fontSize: 14,
     textAlign: "center",
-    marginBottom: 40,
-    lineHeight: 24,
-    maxWidth: "90%",
+    marginBottom: 30,
+    lineHeight: 22,
+    fontWeight: "500",
   },
   buttonGroup: {
-    flexDirection: 'column',
-    width: '100%',
-    alignItems: 'center',
-    gap: 16,
+    flexDirection: 'row',
+    gap: 12,
   },
-  mainButton: {
-    width: "80%",
-    backgroundColor: "#FFD700",
+  getStartedBtn: {
+    backgroundColor: COLORS.gold,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
   },
-  outlineButton: {
-    width: "80%",
-    borderColor: "#fff",
+  getStartedBtnText: {
+    color: COLORS.midnight,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  signInBtn: {
+    borderColor: COLORS.gold,
     borderWidth: 1.5,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: 25,
+  },
+  signInBtnText: {
+    color: COLORS.gold,
+    fontSize: 16,
+    fontWeight: "700",
   },
   scrollIndicator: {
     position: 'absolute',
-    bottom: 40,
-    alignItems: 'center',
+    bottom: 20,
   },
 
-  /* SECTIONS */
+  /* ABOUT */
   sectionContainer: {
-    paddingVertical: 60,
+    paddingVertical: 50,
     paddingHorizontal: 24,
-    backgroundColor: "#fff",
-    alignItems: "center",
   },
-  altSection: {
-    backgroundColor: "#001F3F", // Midnight Blue
+  aboutWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 20,
+  },
+  aboutTextContent: {
+    flex: 1,
   },
   sectionTitle: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#001F3F",
-    marginBottom: 10,
+    fontSize: 24,
+    fontWeight: "900",
+    color: COLORS.midnight,
+    marginBottom: 8,
   },
-  divider: {
-    width: 60,
-    height: 4,
-    backgroundColor: "#FFD700",
-    borderRadius: 2,
-    marginBottom: 24,
-  },
-  sectionText: {
-    fontSize: 16,
-    color: "#555",
-    textAlign: "center",
+  goldDivider: {
+    width: 40,
+    height: 3,
+    backgroundColor: COLORS.gold,
     marginBottom: 16,
-    lineHeight: 24,
-    maxWidth: 600,
   },
-
-  /* STATS */
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginTop: 30,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: "#001F3F",
-  },
-  statLabel: {
+  aboutDescription: {
     fontSize: 14,
-    color: "#777",
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    color: COLORS.textGray,
+    lineHeight: 22,
+  },
+  aboutIllustration: {
+    width: 120,
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   /* FEATURES */
+  altSection: {
+    backgroundColor: "#F9F9F9",
+  },
   featureGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 20,
-    width: '100%',
+    justifyContent: 'space-between',
+    gap: 15,
+    marginTop: 20,
   },
   featureCard: {
-    width: '45%',
-    minWidth: 150,
+    width: (width - 63) / 2, // 2 columns
     backgroundColor: '#fff',
-    padding: 20,
     borderRadius: 16,
-    alignItems: 'center',
-    elevation: 3,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    marginBottom: 10,
+    overflow: 'hidden',
   },
-  featureIconBox: {
+  cardHeader: {
+    height: 40,
+    backgroundColor: COLORS.midnight,
+  },
+  cardContent: {
+    padding: 15,
+    alignItems: 'center',
+    paddingBottom: 25,
+  },
+  iconCircle: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#F0F4F8',
+    backgroundColor: COLORS.gold,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 14,
+    marginTop: -30,
+    borderWidth: 4,
+    borderColor: '#fff',
   },
-  featureTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#001F3F',
-    marginBottom: 8,
+  cardTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.midnight,
     textAlign: 'center',
-  },
-  featureDesc: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'center',
+    marginTop: 12,
     lineHeight: 18,
   },
 
   /* FOOTER */
-  footer: {
-    backgroundColor: "#F0F4F8",
-    padding: 40,
-    alignItems: "center",
-  },
-  footerBrand: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: "#001F3F",
-    marginBottom: 10,
+  footerInfo: {
+    paddingVertical: 30,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
   },
   footerText: {
-    color: "#888",
     fontSize: 12,
+    color: "#888",
   },
 });
+

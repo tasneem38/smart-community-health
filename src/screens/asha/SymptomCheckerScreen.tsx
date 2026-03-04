@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import * as Notifications from 'expo-notifications';
 import { askGroq } from "../../api/aiService";
 import { AuthContext } from "../../store/authContext";
-import { saveSymptomAIResult } from "../../api/firebase/aiRecords";
+import { saveAiRecord } from "../../api/api";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -111,7 +111,16 @@ Format: Plain text with bullet points. No markdown. Keep it concise.
       });
 
       // SAVE TO BACKEND
-      await saveSymptomAIResult(combinedSymptoms, cleaned, userId);
+      await saveAiRecord({
+        type: 'symptom_summary',
+        content: cleaned,
+        metadata: {
+          symptoms: combinedSymptoms,
+          symptomList: selectedSymptoms,
+          userId: userId,
+          description: description
+        }
+      });
     } catch (error) {
       Alert.alert(t('network_error'), "Failed to get AI analysis.");
     } finally {

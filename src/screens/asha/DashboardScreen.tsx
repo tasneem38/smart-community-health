@@ -64,6 +64,13 @@ export default function DashboardScreen({ navigation }: any) {
               onPress={() => navigation.navigate('WaterTestReport')}
             />
             <ActionRow
+              title="Recent Water Tests"
+              subtitle="View history & AI insights"
+              icon="history"
+              color="#607D8B"
+              onPress={() => navigation.navigate('RecentWaterTests')}
+            />
+            <ActionRow
               title={t('alerts')}
               subtitle={t('sub_alerts')}
               icon="alert-circle-outline"

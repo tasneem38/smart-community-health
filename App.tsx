@@ -12,7 +12,7 @@ export default function App() {
 
   useEffect(() => {
     console.log("Initializing local SQLite DB...");
-    initDB();                    // 🔥 IMPORTANT 🔥
+    initDB();
   }, []);
 
   return (

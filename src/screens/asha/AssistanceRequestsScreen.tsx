@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 // @ts-ignore
 import { API_URL } from '../../api/postgres/client';
 import { AuthContext } from '../../store/authContext';
-import { fetchAssistanceRequests, resolveAssistanceRequest } from "../../api/firebase/assistance";
+import { fetchAssistanceRequests, resolveAssistanceRequest } from "../../api/api";
 
 interface AssistanceRequest {
   id: string;
@@ -38,11 +38,11 @@ export default function AssistanceRequestsScreen() {
       const mappedData: AssistanceRequest[] = data.map(d => ({
         id: d.id,
         village: d.village || '',
-        message: d.message || d.reason || '', // Handle both potential keys
+        message: d.description || d.message || '', // Matches 'description' column
         status: d.status || 'pending',
         timestamp: d.timestamp,
-        userId: d.userId,
-        resolved: d.resolved || d.status === 'resolved' || false
+        userId: d.raw_data?.userId || d.userId, // Extract from raw_data if available
+        resolved: d.status === 'resolved'
       }));
 
       // Sort by status (pending first) then date
@@ -284,8 +284,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: 4,
     lineHeight: 22,
+  },
+  audioPlayer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F7FF',
+    borderRadius: 8,
+    paddingRight: 12,
+    marginBottom: 12,
+    alignSelf: 'flex-start',
+  },
+  audioLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#001F3F',
   },
   divider: {
     backgroundColor: '#F0F0F0',

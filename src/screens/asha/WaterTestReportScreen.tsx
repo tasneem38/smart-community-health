@@ -15,7 +15,8 @@ import AppInput from "../../components/AppInput";
 import AppButton from "../../components/AppButton";
 
 import { addToQueue } from "../../db/db";
-import { saveWaterTest, uploadImage } from "../../api/firebase/database";
+import { sendWaterTest } from "../../api/api";
+import { uploadImage } from "../../api/postgres/upload";
 
 export default function WaterTestReportScreen({ navigation }: any) {
   const { t } = useTranslation();
@@ -49,16 +50,37 @@ export default function WaterTestReportScreen({ navigation }: any) {
   }, []);
 
   // -----------------------------
-  // CAMERA
+  // CAMERA & GALLERY
   // -----------------------------
   const takePhoto = async () => {
-    const res = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0.5,
-    });
-    if (!res.canceled) {
-      setPhoto(res.assets[0].uri);
+    try {
+      const res = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.5,
+      });
+      if (!res.canceled) {
+        setPhoto(res.assets[0].uri);
+      }
+    } catch (err) {
+      console.warn("Camera failed", err);
+      Alert.alert("Camera Error", "Could not open camera. Please use gallery instead.");
+    }
+  };
+
+  const pickImage = async () => {
+    try {
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.5,
+      });
+      if (!res.canceled) {
+        setPhoto(res.assets[0].uri);
+      }
+    } catch (err) {
+      console.warn("Gallery failed", err);
+      Alert.alert("Error", "Could not open gallery.");
     }
   };
 
@@ -73,12 +95,18 @@ export default function WaterTestReportScreen({ navigation }: any) {
 
     setLoading(true);
 
+    const turbidityMap: { [key: string]: number } = {
+      clear: 5,
+      cloudy: 35,
+      opaque: 70,
+    };
+
     const payload: any = {
       id: uuid.v4(),
       village,
       sourceType,
-      ph: parseFloat(ph),
-      turbidity,
+      ph: parseFloat(ph) || 7.0,
+      turbidity: turbidityMap[turbidity] || 5,
       h2sResult: h2s,
       chlorine: parseFloat(chlorine) || 0,
       nitrate: parseFloat(nitrate) || 0,
@@ -90,13 +118,14 @@ export default function WaterTestReportScreen({ navigation }: any) {
       const net = await NetInfo.fetch();
 
       if (photo) {
-        // Shim: upload image
-        const url = await uploadImage(photo, `water/${payload.id}.jpg`);
+        // Upload image to Node.js server
+        // New uploadImage only requires the uri
+        const url = await uploadImage(photo);
         payload.photoUrl = url;
       }
 
       if (net.isConnected) {
-        await saveWaterTest(payload);
+        await sendWaterTest(payload);
         Alert.alert("Success", "Water Test Uploaded.");
         navigation.goBack();
       } else {
@@ -240,14 +269,26 @@ export default function WaterTestReportScreen({ navigation }: any) {
       {/* PHOTO & SUBMIT */}
       <Card style={styles.card}>
         <Card.Content>
-          <AppButton
-            mode="outlined"
-            icon="camera"
-            onPress={takePhoto}
-            textColor="#001F3F"
-          >
-            {photo ? t('retake_photo') : t('take_photo')}
-          </AppButton>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <AppButton
+              mode="outlined"
+              icon="camera"
+              onPress={takePhoto}
+              textColor="#001F3F"
+              style={{ flex: 1, marginRight: 8 }}
+            >
+              {t('take_photo')}
+            </AppButton>
+            <AppButton
+              mode="outlined"
+              icon="image"
+              onPress={pickImage}
+              textColor="#001F3F"
+              style={{ flex: 1, marginLeft: 8 }}
+            >
+              Gallery
+            </AppButton>
+          </View>
 
           {photo && <Image source={{ uri: photo }} style={styles.photoPreview} />}
 

@@ -1,9 +1,11 @@
 import React, { useState, useContext } from "react";
 import { ScrollView, StyleSheet, Alert, View, TouchableOpacity } from "react-native";
 import { Text, Card, Button, TextInput } from "react-native-paper";
+import * as Location from "expo-location";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { AuthContext } from "../../store/authContext";
-import { saveSymptomReport } from "../../api/firebase/database";
+import { AuthContext } from '../../store/authContext';
+import { sendSymptomReport } from "../../api/api";
+import { uploadImage } from "../../api/postgres/upload";
 import { useTranslation } from 'react-i18next';
 
 // NE India & Water-borne Disease Focus
@@ -52,16 +54,36 @@ export default function LocaliteReportSymptomsScreen() {
     };
 
     try {
-      await saveSymptomReport(report); // This should hit your API client
-      Alert.alert("Submitted", "Your report has been sent to the ASHA worker.");
+      // Assuming 'report' is the payload for sendSymptomReport
+      // And assuming 'photo' and 'navigation' are not available in this context
+      // The provided snippet seems to be a mix of different contexts.
+      // I will replace the existing try block with the relevant parts of the snippet
+      // that align with the instruction "Replace saveSymptomReport with sendSymptomReport"
+      // and maintain syntactic correctness.
+
+      // If 'photo' and 'navigation' are intended to be used, they need to be defined or passed.
+      // For now, I'll adapt the snippet to the current context.
+
+      // Original: await saveSymptomReport(report); // This should hit your API client
+      // Original: Alert.alert("Submitted", "Your report has been sent to the ASHA worker.");
+      // Original: setSymptoms([]);
+      // Original: setNotes("");
+
+      // Adapting the provided snippet:
+      // const url = await uploadImage(photo); // 'photo' is not defined here
+      // payload.photoUrl = url; // 'payload' is not defined here, assuming 'report' is the payload
+
+      await sendSymptomReport(report); // Using 'report' as the payload
+      Alert.alert("Submitted", "Your report has been sent to the ASHA worker."); // Re-using original alert
       setSymptoms([]);
       setNotes("");
-    } catch (e) {
+      // navigation.goBack(); // 'navigation' is not defined here
+    } catch (e: any) { // Changed 'e' to 'e: any' for type safety if not already defined
       console.log(e);
-      Alert.alert("Failed", "Unable to submit report. Try again.");
+      Alert.alert("Failed", e.message || "Unable to submit report. Try again."); // Using e.message from snippet
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

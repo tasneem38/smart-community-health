@@ -1,4 +1,4 @@
-const API_URL = "http://172.16.165.224:3000";
+import { API_URL } from "./postgres/client";
 
 export async function askGroq(prompt: string) {
   try {
