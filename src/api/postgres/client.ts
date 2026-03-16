@@ -3,12 +3,12 @@ import * as FileSystem from 'expo-file-system';
 import { getToken } from '../auth';
 
 // Hardcoded server configuration (environment variables not working in Expo 48)
-const SERVER_IP = "10.219.162.171"; // Updated to current machine IP
+const SERVER_IP = "10.120.81.171"; // Updated to current machine IP
 const PORT = "3000";
 
 // Use hardcoded IP for mobile, localhost for web
 const IS_ANDROID_EMULATOR = false; // Set to true if using Android Emulator
-const ACTUAL_SERVER_IP = "10.124.245.171";
+const ACTUAL_SERVER_IP = "10.120.81.171";
 const EMULATOR_IP = "10.0.2.2";
 
 export const API_URL = Platform.OS === 'web'
