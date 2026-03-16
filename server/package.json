@@ -1,7 +1,7 @@
 {
     "name": "smart-health-backend",
     "version": "1.0.0",
-    "description": "Backend for Smart Health App replacing Firebase",
+    "description": "Backend for SanjeevaniAI replacing Firebase",
     "main": "index.js",
     "scripts": {
         "start": "node index.js",

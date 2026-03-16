@@ -14,7 +14,7 @@ const PrivacyPolicyScreen = ({ navigation }: any) => {
                     <View style={styles.section}>
                         <Text variant="titleMedium" style={styles.sectionTitle}>1. Introduction</Text>
                         <Text variant="bodyMedium" style={styles.paragraph}>
-                            Welcome to the Smart Health App. This application is designed to assist ASHA workers in collecting and managing health data for their communities. We are committed to protecting the privacy and security of both our workers and the patients they serve.
+                            Welcome to the SanjeevaniAI App. This application is designed to assist ASHA workers in collecting and managing health data for their communities. We are committed to protecting the privacy and security of both our workers and the patients they serve.
                         </Text>
                     </View>
 

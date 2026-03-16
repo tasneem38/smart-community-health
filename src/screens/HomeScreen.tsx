@@ -46,7 +46,7 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.overlay} />
 
         <View style={styles.heroContent}>
-          <Text style={styles.brandTitle}>SMART HEALTH</Text>
+          <Text style={styles.brandTitle}>SanjeevaniAI</Text>
           <Text style={styles.tagline}>
             Innovating healthcare for rural communities with real-time water quality testing and AI-driven insights.
           </Text>
@@ -87,7 +87,7 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.sectionTitle}>ABOUT US</Text>
             <View style={styles.goldDivider} />
             <Text style={styles.aboutDescription}>
-              Smart Health is an offline-first platform designed for rural health surveillance. We connect health workers and villagers to a central monitoring system with AI insights.
+              SanjeevaniAI is an offline-first platform designed for rural health surveillance. We connect health workers and villagers to a central monitoring system with AI insights.
             </Text>
           </View>
           <View style={styles.aboutIllustration}>
@@ -139,7 +139,7 @@ export default function HomeScreen({ navigation }: any) {
 
       {/* Footer / Info Section */}
       <View style={styles.footerInfo}>
-        <Text style={styles.footerText}>© 2026 Smart Health Initiative</Text>
+        <Text style={styles.footerText}>© 2026 SanjeevaniAI Initiative</Text>
       </View>
 
     </ScrollView>

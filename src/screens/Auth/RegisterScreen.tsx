@@ -83,7 +83,7 @@ export default function RegisterScreen({ navigation }: any) {
               <View style={styles.iconCircle}>
                 <MaterialCommunityIcons name="account-plus" size={42} color="#001F3F" />
               </View>
-              <Text style={styles.appTitle}>Smart Health</Text>
+              <Text style={styles.appTitle}>SanjeevaniAI</Text>
               <Text style={styles.tagline}>Create Your Account</Text>
             </View>
 

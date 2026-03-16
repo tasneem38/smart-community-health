@@ -79,7 +79,7 @@ export default function HelplineCallScreen({ navigation }: any) {
                 languageLoopRef.current = true;
 
                 // Initial greeting
-                await speakTTS('Welcome to Smart Health Helpline.', 'en-IN');
+                await speakTTS('Welcome to SanjeevaniAI Helpline.', 'en-IN');
 
                 // Move to language phase UI
                 if (!callActiveRef.current || phase !== 'greeting') return;
@@ -319,7 +319,7 @@ export default function HelplineCallScreen({ navigation }: any) {
                         </View>
                     </Animated.View>
                     <Text style={styles.callingText}>Calling Health Helpline...</Text>
-                    <Text style={styles.subText}>Smart Community Health</Text>
+                    <Text style={styles.subText}>SanjeevaniAI</Text>
                 </View>
             )}
 

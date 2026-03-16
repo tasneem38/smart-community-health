@@ -188,7 +188,7 @@ async function askSarvam(messages) {
         let filteredMessages = firstUserIdx !== -1 ? messages.slice(firstUserIdx) : messages;
 
         // 2. Prepend guidance to the first user message
-        const guidance = "GUIDANCE: You are a helpful Rural Health Assistant for Smart Health in North East India. Use simple, supportive language. Respond in the language of the user's query.\n\n";
+        const guidance = "GUIDANCE: You are a helpful Rural Health Assistant for SanjeevaniAI in North East India. Use simple, supportive language. Respond in the language of the user's query.\n\n";
 
         const validatedMessages = filteredMessages.map((m, idx) => {
             if (idx === 0 && m.role === 'user') {
