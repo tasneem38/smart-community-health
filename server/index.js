@@ -13,10 +13,14 @@ require('dotenv').config();
 const { SarvamAIClient } = require('sarvamai');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: '*', // Allow all for now, can be restricted to ['http://localhost:19006', 'https://your-frontend.vercel.app'] later
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(bodyParser.json());
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-fallback-secret-for-dev-only';
+const JWT_SECRET = process.env.JWT_SECRET || 'dc1ee88450b2e21b2f7e679a2ed6beda5d6be292be4b16c1ce7a9120c349f384a881cca3d6a0961ffda701ae0e809d1736f66ba2785c86bf277e4b20faa29b91';
 
 // ---------------------------------------------------------
 // SECURITY HELPERS & MIDDLEWARE

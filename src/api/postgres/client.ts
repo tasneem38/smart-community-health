@@ -11,9 +11,9 @@ const IS_ANDROID_EMULATOR = false; // Set to true if using Android Emulator
 const ACTUAL_SERVER_IP = "10.120.81.171";
 const EMULATOR_IP = "10.0.2.2";
 
-export const API_URL = Platform.OS === 'web'
-    ? `http://localhost:${PORT}`
-    : `http://${IS_ANDROID_EMULATOR ? EMULATOR_IP : ACTUAL_SERVER_IP}:${PORT}`;
+export const API_URL = __DEV__
+    ? (Platform.OS === 'web' ? 'http://localhost:3000' : 'http://10.120.81.171:3000')
+    : 'https://sanjeevaniai-api.onrender.com'; // YOUR RENDER URL
 
 async function request(endpoint: string, method: string = "GET", body?: any, isFormData: boolean = false) {
     const headers: any = {};
