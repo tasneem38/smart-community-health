@@ -1,4 +1,5 @@
 import { API_URL } from './client';
+import { getToken } from '../auth';
 
 /**
  * Upload an image to the server
@@ -7,6 +8,7 @@ import { API_URL } from './client';
  */
 export async function uploadImage(imageUri: string): Promise<string> {
     try {
+        const token = await getToken();
         // Create FormData
         const formData = new FormData();
 
@@ -27,7 +29,7 @@ export async function uploadImage(imageUri: string): Promise<string> {
             method: 'POST',
             body: formData,
             headers: {
-                // 'Content-Type': 'multipart/form-data', // Let fetch set this with boundary
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
         });
 
@@ -54,6 +56,7 @@ export async function uploadImage(imageUri: string): Promise<string> {
  */
 export async function uploadAudio(audioUri: string): Promise<string> {
     try {
+        const token = await getToken();
         const formData = new FormData();
         const filename = audioUri.split('/').pop() || 'audio.m4a';
 
@@ -66,6 +69,9 @@ export async function uploadAudio(audioUri: string): Promise<string> {
         const response = await fetch(`${API_URL}/upload`, {
             method: 'POST',
             body: formData,
+            headers: {
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
         });
 
         if (!response.ok) {

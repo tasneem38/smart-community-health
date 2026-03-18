@@ -7,7 +7,7 @@ import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import { AuthContext } from "../../store/authContext";
 import { useTranslation } from 'react-i18next';
-import { sendAssistanceRequest } from "../../api/api";
+import { sendAssistanceRequest, transcribeAudioApi } from "../../api/api";
 import { uploadAudio } from "../../api/postgres/upload";
 import AppInput from "../../components/AppInput";
 
@@ -29,6 +29,7 @@ export default function LocaliteRequestAssistanceScreen({ navigation }: any) {
   const [solutions, setSolutions] = useState<string[]>([]);
   const [showSolutions, setShowSolutions] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -69,8 +70,31 @@ export default function LocaliteRequestAssistanceScreen({ navigation }: any) {
       const uri = recording.getURI();
       setAudioUri(uri);
       setRecording(null);
+
+      // --- AUTO TRANSCRIPTION ---
+      if (uri) {
+        handleAutoTranscription(uri);
+      }
     } catch (err) {
       console.error('Failed to stop recording', err);
+    }
+  }
+
+  async function handleAutoTranscription(uri: string) {
+    setIsTranscribing(true);
+    try {
+      const res = await transcribeAudioApi(uri);
+      if (res.ok && res.data) {
+        const transcript = res.data.trim();
+        if (transcript) {
+          // Append transcript to message if it exists, otherwise set it
+          setMsg(prev => prev ? `${prev}\n\n[Transcribed]: ${transcript}` : transcript);
+        }
+      }
+    } catch (err) {
+      console.error("Auto-transcription error:", err);
+    } finally {
+      setIsTranscribing(false);
     }
   }
 
@@ -216,10 +240,13 @@ export default function LocaliteRequestAssistanceScreen({ navigation }: any) {
                   animated
                 />
                 <View style={{ flex: 1, justifyContent: 'center' }}>
-                  <Text style={{ fontWeight: '700', color: isRecording ? '#d32f2f' : '#001F3F' }}>
-                    {isRecording ? "Recording... (Tap to stop)" : audioUri ? "Audio Recorded" : "Record Voice Message"}
+                  <Text style={{ fontWeight: '700', color: isRecording ? '#d32f2f' : (isTranscribing ? '#f57c00' : '#001F3F') }}>
+                    {isRecording ? "Recording... (Tap to stop)" : 
+                     isTranscribing ? "Converting voice to text..." :
+                     audioUri ? "Audio Recorded & Transcribed" : "Record Voice Message"}
                   </Text>
                   {isRecording && <Text style={{ fontSize: 10, color: '#d32f2f' }}>Microphone is active</Text>}
+                  {isTranscribing && <ActivityIndicator size="small" color="#f57c00" style={{ alignSelf: 'flex-start', marginTop: 4 }} />}
                 </View>
 
                 {audioUri && !isRecording && (

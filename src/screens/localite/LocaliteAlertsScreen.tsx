@@ -19,8 +19,15 @@ export default function LocaliteAlertsScreen() {
     setLoading(true);
     try {
       const remote = await fetchAlerts();
-      // Combine with local DB alerts if needed, or just use remote
-      setAlerts(remote || []);
+      // Safety Filter: Only show public information to Localites
+      const publicAlerts = (remote || []).filter((a: any) => 
+        a.type === "Water Contamination" || 
+        a.type === "Unsafe pH" || 
+        a.type === "Community Precaution" ||
+        a.type.includes("Cluster") ||
+        a.type.includes("Outbreak")
+      );
+      setAlerts(publicAlerts);
     } catch (e) {
       console.warn("Failed remote alerts, showing cached", e);
       const dbAlerts = await getAlertsFromDB();

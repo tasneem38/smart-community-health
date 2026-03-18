@@ -36,12 +36,12 @@ export default function AssistanceRequestsScreen() {
       const data: any[] = await fetchAssistanceRequests();
       // Map data to ensure it matches AssistanceRequest if needed, or cast it
       const mappedData: AssistanceRequest[] = data.map(d => ({
-        id: d.id,
+        id: String(d.id),
         village: d.village || '',
         message: d.description || d.message || '', // Matches 'description' column
         status: d.status || 'pending',
         timestamp: d.timestamp,
-        userId: d.raw_data?.userId || d.userId, // Extract from raw_data if available
+        userId: d.raw_data?.userId ? String(d.raw_data.userId) : (d.userId ? String(d.userId) : undefined),
         resolved: d.status === 'resolved'
       }));
 

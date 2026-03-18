@@ -495,14 +495,14 @@ app.post('/water-tests', authenticateToken, async (req, res) => {
         // Rule 1: Water Alerts
         if (turbidity > 30) {
             await pool.query(
-                'INSERT INTO alerts (type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5)',
-                ['Water Contamination', `High turbidity detected (${turbidity} NTU)`, 'High', village, timestamp]
+                'INSERT INTO alerts (title, type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+                ['Water Contamination Alert', 'Water Contamination', `High turbidity detected (${turbidity} NTU)`, 'High', village, timestamp]
             );
         }
         if (ph < 6.5 || ph > 8.5) {
             await pool.query(
-                'INSERT INTO alerts (type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5)',
-                ['Unsafe pH', `pH out of safe range: ${ph}`, 'Medium', village, timestamp]
+                'INSERT INTO alerts (title, type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+                ['Unsafe pH Level', 'Unsafe pH', `pH out of safe range: ${ph}`, 'Medium', village, timestamp]
             );
         }
 
@@ -552,117 +552,146 @@ app.get('/water-status', authenticateToken, async (req, res) => {
 // ---------------------------------------------------------
 
 app.post('/symptom-reports', authenticateToken, async (req, res) => {
-    const { village, name, symptoms, timestamp: clientTs, reporterRole, consentGiven } = req.body; // symptoms is array
+    // Support both new rich telemetry and legacy simple reports
+    let { village, name, symptoms, timestamp: clientTs, reporterRole, consentGiven, patientInfo } = req.body;
 
-    // DPDP Requirement: Block if consent not provided
-    if (!consentGiven) {
+    // DPDP Requirement: Block if consent not provided (client.ts usually injects this)
+    if (consentGiven === false) {
         return res.status(400).json({ error: 'Consent required for data collection' });
+    }
+
+    // Normalize patient info
+    if (patientInfo) {
+        village = village || patientInfo.village;
+        name = name || patientInfo.name || "Citizen (App)";
+    }
+
+    // Normalize symptoms to array for PostgreSQL TEXT[] column and cluster logic
+    let symptomsArray = [];
+    if (Array.isArray(symptoms)) {
+        symptomsArray = symptoms;
+    } else if (typeof symptoms === 'object' && symptoms !== null) {
+        symptomsArray = Object.keys(symptoms);
     }
 
     const timestamp = clientTs || new Date().toISOString();
 
     try {
+        console.log(`[SYMPTOM REPORT] Processing for ${name} in ${village}. Symptoms: ${symptomsArray.length}`);
+        
         const result = await pool.query(
-            'INSERT INTO symptom_reports (village, name, symptoms, timestamp) VALUES ($1, $2, $3, $4) RETURNING id',
-            [village, name, symptoms, timestamp]
+            'INSERT INTO symptom_reports (village, name, symptoms, timestamp, raw_data) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [village || 'Unknown', name || 'Anonymous', symptomsArray, timestamp, req.body]
         );
 
-        await logConsent(req.user.uid, 'SYMPTOM_REPORT_COLLECTION', true, req.ip);
-        await logAudit(req.user.uid, 'SYMPTOM_REPORT_CREATED', result.rows[0].id.toString(), 'symptom_reports');
+        const reportId = result.rows[0].id;
+        console.log(`[SYMPTOM REPORT] Saved report ID: ${reportId}`);
 
-        // ------------------------------------------------------------------
-        // IMMEDIATE ALERT FOR LOCALITE REPORTS
-        // ------------------------------------------------------------------
-        if (reporterRole === 'LOCALITE') {
-            const description = `Citizen Report: ${name} reported ${symptoms.length} symptoms (${symptoms.join(', ')})`;
-            await pool.query(
-                'INSERT INTO alerts (type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5)',
-                ['Citizen Report', description, 'Medium', village, timestamp]
-            );
-            console.log(`Generated immediate alert for ${village} from ${name}`);
+        try {
+            await logConsent(req.user.uid, 'SYMPTOM_REPORT_COLLECTION', true, req.ip);
+            await logAudit(req.user.uid, 'SYMPTOM_REPORT_CREATED', reportId.toString(), 'symptom_reports');
+        } catch (auditErr) {
+            console.error("[SYMPTOM REPORT] Audit/Consent logging failed (non-fatal):", auditErr.message);
         }
 
         // ------------------------------------------------------------------
-        // NEW AGGREGATION LOGIC (Rule-based Cluster Detection)
+        // IMMEDIATE ALERT FOR LOCALITE REPORTS OR HIGH RISK
         // ------------------------------------------------------------------
-        if (village) {
-            // Count similar symptoms in this village over the last 7 days from DB
-            // We use unnest to treat each symptom in the array as a separate row to count
-            const statsRes = await pool.query(
-                `SELECT s, count(*) 
-                FROM symptom_reports, unnest(symptoms) as s
-                WHERE village = $1 
-                AND timestamp > NOW() - INTERVAL '7 days'
-                GROUP BY s`,
-                [village]
-            );
+        const isHighRisk = req.body.isHighRisk || false;
+        if (reporterRole === 'LOCALITE' || isHighRisk) {
+            try {
+                const riskLevel = isHighRisk ? 'High' : 'Medium';
+                const description = `${isHighRisk ? '⚠️ High Risk' : 'Citizen Report'}: ${name} reported symptoms (${symptomsArray.join(', ')})`;
+                
+                await pool.query(
+                    'INSERT INTO alerts (title, type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+                    [`Symptom Alert: ${name}`, 'Symptom Alert', description, riskLevel, village || 'Unknown', timestamp]
+                );
+                console.log(`[SYMPTOM REPORT] Generated alert (Risk: ${riskLevel})`);
+            } catch (alertErr) {
+                console.error("[SYMPTOM REPORT] Immediate alert failed (non-fatal):", alertErr.message);
+            }
+        }
 
-            for (let row of statsRes.rows) {
-                const symptom = row.s;
-                const count = parseInt(row.count, 10);
-                let risk = null;
-                let desc = "";
+        // ------------------------------------------------------------------
+        // AGGREGATION LOGIC (Rule-based Cluster Detection)
+        // ------------------------------------------------------------------
+        if (village && village !== 'Unknown') {
+            try {
+                const statsRes = await pool.query(
+                    `SELECT s, count(*) 
+                    FROM symptom_reports, unnest(symptoms) as s
+                    WHERE village = $1 
+                    AND timestamp > NOW() - INTERVAL '7 days'
+                    GROUP BY s`,
+                    [village]
+                );
 
-                if (count >= 10) {
-                    risk = 'High';
-                    desc = `Outbreak Alert: ${count} cases of ${symptom} reported in ${village} in the last 7 days.`;
-                } else if (count >= 5) {
-                    risk = 'Medium';
-                    desc = `Cluster Alert: ${count} cases of ${symptom} reported in ${village}. Monitoring required.`;
-                } else if (count >= 3) {
-                    risk = 'Low';
-                    desc = `Early Warning: ${count} cases of ${symptom} reported in ${village}.`;
-                }
+                for (let row of statsRes.rows) {
+                    const symptom = row.s;
+                    const count = parseInt(row.count, 10);
+                    let risk = null;
+                    let desc = "";
 
-                if (risk) {
-                    // Check if a similar alert already exists for today to avoid spam
-                    const existing = await pool.query(
-                        `SELECT * FROM alerts 
-                         WHERE village = $1 AND description = $2 
-                         AND timestamp > NOW() - INTERVAL '24 hours'`,
-                        [village, desc]
-                    );
+                    if (count >= 10) {
+                        risk = 'High';
+                        desc = `Outbreak Alert: ${count} cases of ${symptom} reported in ${village} in the last 7 days.`;
+                    } else if (count >= 5) {
+                        risk = 'Medium';
+                        desc = `Cluster Alert: ${count} cases of ${symptom} reported in ${village}. Monitoring required.`;
+                    } else if (count >= 3) {
+                        risk = 'Low';
+                        desc = `Early Warning: ${count} cases of ${symptom} reported in ${village}.`;
+                    }
 
-                    if (existing.rows.length === 0) {
-                        // 1. Standard Risk Alert for ASHA
-                        await pool.query(
-                            'INSERT INTO alerts (type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5)',
-                            [`${risk} Risk: ${symptom} Cluster`, desc, risk, village, timestamp]
+                    if (risk) {
+                        const existing = await pool.query(
+                            `SELECT * FROM alerts 
+                             WHERE village = $1 AND description = $2 
+                             AND timestamp > NOW() - INTERVAL '24 hours'`,
+                            [village, desc]
                         );
-                        console.log(`Generated ${risk} alert for ${village}: ${symptom}`);
 
-                        // 2. AI-Generated Precaution for Localites (Community Precaution)
-                        // Trigger only for significant clusters to save API calls
-                        if (count >= 3) {
-                            try {
-                                const prompt = `Identify relevant precautions for ${count} cases of "${symptom}" reported in ${village}, North East India context. 
-                                Provide a concise, actionable safety message for villagers (max 25 words). 
-                                Focus on water/vector-borne prevention if applicable.
-                                Start with "Advisory: "`;
+                        if (existing.rows.length === 0) {
+                            const alertTitle = `${risk} Risk: ${symptom} Cluster`;
+                            await pool.query(
+                                'INSERT INTO alerts (title, type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+                                [alertTitle, alertTitle, desc, risk, village, timestamp]
+                            );
+                            
+                            if (count >= 3) {
+                                try {
+                                    const prompt = `Identify relevant precautions for ${count} cases of "${symptom}" reported in ${village}, North East India context. 
+                                    Provide a concise, actionable safety message for villagers (max 25 words). 
+                                    Focus on water/vector-borne prevention if applicable.
+                                    Start with "Advisory: "`;
 
-                                const advice = await askGroq(prompt);
-                                const cleanAdvice = advice.replace(/['"]+/g, '').trim();
+                                    const advice = await askGroq(prompt);
+                                    const cleanAdvice = (advice || "").replace(/['"]+/g, '').trim();
 
-                                if (cleanAdvice) {
-                                    await pool.query(
-                                        'INSERT INTO alerts (type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5)',
-                                        ['Community Precaution', cleanAdvice, 'Info', village, timestamp]
-                                    );
-                                    console.log(`Generated AI Precaution for ${village}: ${cleanAdvice}`);
+                                    if (cleanAdvice) {
+                                        await pool.query(
+                                            'INSERT INTO alerts (title, type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+                                            ['Health Advisory', 'Community Precaution', cleanAdvice, 'Info', village, timestamp]
+                                        );
+                                    }
+                                } catch (aiErr) {
+                                    console.error("[SYMPTOM REPORT] AI precaution failed:", aiErr.message);
                                 }
-                            } catch (aiErr) {
-                                console.error("Failed to generate AI precaution:", aiErr);
                             }
                         }
                     }
                 }
+            } catch (clusterErr) {
+                console.error("[SYMPTOM REPORT] Cluster detection failed (non-fatal):", clusterErr.message);
             }
         }
 
-        res.json({ ok: true, id: result.rows[0].id });
+        res.json({ ok: true, id: reportId });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to save symptom report' });
+        console.error("SYMPTOM REPORT FATAL ERROR:", err.message);
+        console.error(err.stack);
+        res.status(500).json({ error: 'Failed to save symptom report: ' + err.message });
     }
 });
 
@@ -672,7 +701,17 @@ app.post('/symptom-reports', authenticateToken, async (req, res) => {
 
 app.get('/alerts', authenticateToken, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM alerts ORDER BY timestamp DESC LIMIT 50');
+        let query = 'SELECT * FROM alerts';
+        const params = [];
+
+        // Role-based Filtering: Localites should NOT see individual patient reports or urgent callbacks.
+        if (req.user.role === 'LOCALITE') {
+            query += " WHERE type NOT IN ('Symptom Alert', 'Citizen Report', 'Urgent Helpline', 'Urgent Helpline Alert') ";
+        }
+
+        query += ' ORDER BY timestamp DESC LIMIT 50';
+
+        const result = await pool.query(query, params);
         res.json(result.rows);
     } catch (err) {
         console.error(err);
@@ -773,7 +812,7 @@ app.post('/api/ai/analyze', async (req, res) => {
     res.json({ result });
 });
 
-app.post('/api/sarvam/chat', async (req, res) => {
+app.post('/api/sarvam/chat', authenticateToken, async (req, res) => {
     const { messages } = req.body;
     if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: "Messages array is required" });
@@ -787,7 +826,7 @@ app.post('/api/sarvam/chat', async (req, res) => {
     }
 });
 
-app.post('/api/sarvam/stt', upload.single('audio'), async (req, res) => {
+app.post('/api/sarvam/stt', authenticateToken, upload.single('audio'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: "No audio file uploaded" });
     }
@@ -820,7 +859,7 @@ app.get('/api/sarvam/history', authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/api/sarvam/save', async (req, res) => {
+app.post('/api/sarvam/save', authenticateToken, async (req, res) => {
     const { user_id, role, content } = req.body;
     if (!user_id || !role || !content) {
         return res.status(400).json({ error: "user_id, role, and content are required" });
@@ -838,7 +877,7 @@ app.post('/api/sarvam/save', async (req, res) => {
     }
 });
 
-app.post('/api/sarvam/tts', async (req, res) => {
+app.post('/api/sarvam/tts', authenticateToken, async (req, res) => {
     const { text, languageCode, isCallAgent } = req.body;
     console.log("[TTS] Request received for text length:", text ? text.length : 0, "Lang:", languageCode, "isCallAgent:", !!isCallAgent);
     if (!text) return res.status(400).json({ error: "Text is required" });

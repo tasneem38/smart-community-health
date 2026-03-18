@@ -1,5 +1,6 @@
 import React, { createContext, useReducer, useEffect, useMemo } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveToken, removeToken } from "../api/auth";
 
 /* ---------------------------------------------
    USER ROLES
@@ -82,6 +83,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const authActions = useMemo(() => ({
     login: async (user: User) => {
       try {
+        if (user?.token) {
+          await saveToken(user.token);
+        }
         await AsyncStorage.setItem('user', JSON.stringify(user));
         dispatch({ type: "LOGIN", payload: user });
       } catch (e) {
@@ -90,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     },
     logout: async () => {
       try {
+        await removeToken();
         await AsyncStorage.removeItem('user');
         dispatch({ type: "LOGOUT" });
       } catch (e) {
