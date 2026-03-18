@@ -70,6 +70,10 @@ async function logConsent(userId, purpose, consentGiven, ipAddress) {
     }
 }
 
+app.get('/', (req, res) => {
+    res.json({ ok: true, message: 'SanjeevaniAI API Server is running!', timestamp: new Date().toISOString() });
+});
+
 app.get('/ping', (req, res) => {
     res.json({ ok: true, message: 'Server is reachable!', timestamp: new Date().toISOString() });
 });
