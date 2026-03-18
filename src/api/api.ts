@@ -17,7 +17,8 @@ import {
   transcribeAudioPostgres,
   fetchSarvamHistoryPostgres,
   saveSarvamMessagePostgres,
-  textToSpeechPostgres
+  textToSpeechPostgres,
+  clearSarvamHistoryPostgres
 } from "./postgres/client";
 import { saveToken } from "./auth";
 
@@ -52,6 +53,15 @@ export async function saveSarvamMessageApi(userId: number, role: string, content
   try {
     const response = await saveSarvamMessagePostgres(userId, role, content);
     return { ok: true, data: response };
+  } catch (e: any) {
+    return { ok: false, error: e.message };
+  }
+}
+
+export async function clearSarvamHistoryApi(userId: number) {
+  try {
+    await clearSarvamHistoryPostgres(userId);
+    return { ok: true };
   } catch (e: any) {
     return { ok: false, error: e.message };
   }

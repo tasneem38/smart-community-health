@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
-import { ScrollView, StyleSheet, View, Alert } from "react-native";
-import { TextInput, Button, Text, Card, ActivityIndicator, Chip } from "react-native-paper";
+import { ScrollView, StyleSheet, View, Alert, StatusBar } from "react-native";
+import { TextInput, Button, Text, Card, ActivityIndicator, Chip, IconButton } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import * as Notifications from 'expo-notifications';
@@ -36,9 +36,6 @@ export default function SymptomCheckerScreen({ navigation }: any) {
   const { state } = useContext(AuthContext);
   const userId = state.user?.id;
 
-  React.useLayoutEffect(() => {
-    navigation.setOptions({ headerShown: false });
-  }, [navigation]);
 
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [description, setDescription] = useState("");
@@ -129,10 +126,19 @@ Format: Plain text with bullet points. No markdown. Keep it concise.
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+    <View style={{ flex: 1 }}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
       {/* HEADER */}
       <View style={styles.headerContainer}>
-        <View>
+        <IconButton
+          icon="arrow-left"
+          iconColor="#fff"
+          size={24}
+          onPress={() => navigation.goBack()}
+          style={{ marginLeft: -10, marginRight: 4 }}
+        />
+        <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>{t('symptom_checker')}</Text>
           <Text style={styles.headerSub}>{t('sub_symptom_checker')}</Text>
         </View>
@@ -218,7 +224,8 @@ Format: Plain text with bullet points. No markdown. Keep it concise.
         </Card>
       ) : null}
 
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

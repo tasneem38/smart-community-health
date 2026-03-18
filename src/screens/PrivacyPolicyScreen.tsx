@@ -1,14 +1,27 @@
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Text, Button, Surface } from 'react-native-paper';
+import { ScrollView, StyleSheet, View, StatusBar } from 'react-native';
+import { Text, Button, Surface, IconButton } from 'react-native-paper';
 import { theme } from '../theme/theme';
 
 const PrivacyPolicyScreen = ({ navigation }: any) => {
     return (
         <View style={styles.container}>
+            <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+            
+            {/* HEADER */}
+            <View style={styles.headerContainer}>
+                <IconButton
+                    icon="arrow-left"
+                    iconColor="#fff"
+                    size={24}
+                    onPress={() => navigation.goBack()}
+                    style={{ marginLeft: -10 }}
+                />
+                <Text style={styles.headerTitle}>Privacy Policy</Text>
+            </View>
+
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <Surface style={styles.surface} elevation={2}>
-                    <Text variant="headlineMedium" style={styles.header}>Privacy Policy</Text>
                     <Text variant="bodyMedium" style={styles.lastUpdated}>Last Updated: January 2026</Text>
 
                     <View style={styles.section}>
@@ -105,11 +118,21 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         backgroundColor: theme.colors.surface,
     },
-    header: {
+    headerContainer: {
+        backgroundColor: '#001F3F',
+        paddingTop: 50,
+        paddingBottom: 20,
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+    },
+    headerTitle: {
+        fontSize: 22,
         fontWeight: 'bold',
-        color: theme.colors.primary,
-        marginBottom: 8,
-        textAlign: 'center',
+        color: '#fff',
+        marginLeft: 8,
     },
     lastUpdated: {
         color: '#666',

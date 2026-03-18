@@ -132,7 +132,12 @@ async function askGroq(prompt) {
             }),
         });
         const data = await res.json();
-        return data.choices?.[0]?.message?.content || "";
+        let content = data.choices?.[0]?.message?.content || "";
+
+        // Strip <think> tags or reasoning blocks (even if unclosed)
+        content = content.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, '').trim();
+
+        return content;
     } catch (err) {
         console.error("Groq AI Error:", err.message);
         return "";
@@ -182,28 +187,80 @@ async function askSarvam(messages) {
             apiSubscriptionKey: key,
         });
 
-        // Sarvam AI often requires the first message to be from the 'user'.
-        // 1. Filter out any leading messages that are NOT from a user (like initial UI welcomes)
+        // Sarvam AI requires alternating roles starting with 'user'.
+        // 1. Filter: Start with the first 'user' message
         let firstUserIdx = messages.findIndex(m => m.role === 'user');
-        let filteredMessages = firstUserIdx !== -1 ? messages.slice(firstUserIdx) : messages;
+        if (firstUserIdx === -1) return { content: "How can I help you today?" };
+        let stream = messages.slice(firstUserIdx);
 
-        // 2. Prepend guidance to the first user message
-        const guidance = "GUIDANCE: You are a helpful Rural Health Assistant for SanjeevaniAI in North East India. Use simple, supportive language. Respond in the language of the user's query.\n\n";
+        // 2. Collapse consecutive messages with the same role and sanitize
+        let validatedMessages = [];
+        for (let m of stream) {
+            const role = m.role === 'assistant' ? 'assistant' : 'user'; // Normalize
+            const content = (m.content || "").toString().trim();
+            if (!content) continue; // Skip empty messages
 
-        const validatedMessages = filteredMessages.map((m, idx) => {
-            if (idx === 0 && m.role === 'user') {
-                return { ...m, content: guidance + m.content };
+            if (validatedMessages.length > 0 && validatedMessages[validatedMessages.length - 1].role === role) {
+                validatedMessages[validatedMessages.length - 1].content += "\n" + content;
+            } else {
+                validatedMessages.push({ role, content });
             }
-            return m;
-        });
+        }
+
+        // 3. Final check: must start with user, must alternate
+        if (validatedMessages.length === 0 || validatedMessages[0].role !== 'user') {
+            return { content: "I am Simran, your health assistant. How can I help you?" };
+        }
+
+        // 4. Prepend guidance to the first user message
+        const guidance = `GUIDANCE: You are Simran, a helpful and empathetic Health Assistant for rural communities in North East India.
+        - Provide clear, well-structured, and helpful explanations.
+        - Use a friendly yet professional tone.
+        - NEVER show your internal thinking, reasoning, or <think> tags.
+        - Use **bold** for important medical terms, symptoms, or recommended actions.
+        - Use bullet points or numbered lists where it aids clarity.
+        - Respond in the user's language.\n\n`;
+
+        validatedMessages[0].content = guidance + validatedMessages[0].content;
+
+        console.log("[SARVAM REQUEST]:", JSON.stringify(validatedMessages.map(m => ({ role: m.role, len: m.content.length })), null, 2));
 
         const response = await sarvam.chat.completions({
             model: "sarvam-m",
             messages: validatedMessages,
         });
 
+        const rawContent = response.choices?.[0]?.message?.content || "";
+        console.log("[SARVAM RAW]:", rawContent);
+
+        let content = rawContent;
+
+        // 1. If it has both <think> and </think>, strip everything between them
+        if (content.includes('<think>') && content.includes('</think>')) {
+            content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        }
+        // 2. If it has an unclosed <think>, but no </think>
+        else if (content.includes('<think>')) {
+            // Check if there is actual content after the tag
+            const parts = content.split('<think>');
+            const before = parts[0].trim();
+            const after = parts.slice(1).join('<think>').trim();
+
+            if (after && (after.length > before.length)) {
+                // If the part after <think> is substantial, assume it's the response
+                // that mistakenly started with a tag but didn't close it
+                content = (before + "\n" + after).trim();
+            } else {
+                // Otherwise, it might be JUST reasoning
+                content = before || "... (Thinking) ...";
+            }
+        }
+
+        // Clean up remaining tags if any (just in case)
+        content = content.replace(/<\/think>/gi, '').replace(/<think>/gi, '').trim();
+
         return {
-            content: response.choices?.[0]?.message?.content || "",
+            content: content,
         };
     } catch (err) {
         console.error("Sarvam SDK Error:", err.message);
@@ -578,7 +635,7 @@ app.post('/symptom-reports', authenticateToken, async (req, res) => {
 
     try {
         console.log(`[SYMPTOM REPORT] Processing for ${name} in ${village}. Symptoms: ${symptomsArray.length}`);
-        
+
         const result = await pool.query(
             'INSERT INTO symptom_reports (village, name, symptoms, timestamp, raw_data) VALUES ($1, $2, $3, $4, $5) RETURNING id',
             [village || 'Unknown', name || 'Anonymous', symptomsArray, timestamp, req.body]
@@ -602,7 +659,7 @@ app.post('/symptom-reports', authenticateToken, async (req, res) => {
             try {
                 const riskLevel = isHighRisk ? 'High' : 'Medium';
                 const description = `${isHighRisk ? '⚠️ High Risk' : 'Citizen Report'}: ${name} reported symptoms (${symptomsArray.join(', ')})`;
-                
+
                 await pool.query(
                     'INSERT INTO alerts (title, type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
                     [`Symptom Alert: ${name}`, 'Symptom Alert', description, riskLevel, village || 'Unknown', timestamp]
@@ -658,7 +715,7 @@ app.post('/symptom-reports', authenticateToken, async (req, res) => {
                                 'INSERT INTO alerts (title, type, description, risk, village, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
                                 [alertTitle, alertTitle, desc, risk, village, timestamp]
                             );
-                            
+
                             if (count >= 3) {
                                 try {
                                     const prompt = `Identify relevant precautions for ${count} cases of "${symptom}" reported in ${village}, North East India context. 
@@ -750,17 +807,24 @@ app.post('/assistance-requests', authenticateToken, async (req, res) => {
         // 2. Generate AI Solutions
         if (finalDescription) {
             const prompt = `A villager in a rural area needs help: "${finalDescription}". 
-            Provide 3-4 simple, actionable temporary solutions they can try while waiting for a health worker. 
-            Focus on safety and basic health/community care.
-            IMPORTANT: Keep each solution under 15 words.
-            Format: A simple list.
-            Disclaimer: End with "These are temporary suggestions. Wait for your ASHA worker."`;
+            Provide exactly 4 simple, actionable temporary solutions they can try while waiting for an ASHA health worker.
+            
+            Format your response STRICTLY as a simple numbered list like this:
+            1. [Solution 1]
+            2. [Solution 2]
+            3. [Solution 3]
+            4. [Solution 4]
+            
+            IMPORTANT: Use no preamble, no "Sure", and no conversational text. Focus on safety and immediate care only. Each solution under 10 words. Total response under 40 words.`;
 
             const rawAiRes = await askGroq(prompt);
             if (rawAiRes) {
                 aiSolutions = rawAiRes.split('\n')
-                    .map(s => s.replace(/^\d+\.\s*/, '').trim())
-                    .filter(s => s.length > 5);
+                    .map(s => s.replace(/^\d+\.\s*/, '').replace(/^-\s*/, '').trim())
+                    .filter(s => s.length > 10 && !s.toLowerCase().includes("sure") && !s.toLowerCase().includes("here are"));
+
+                // Ensure we only take the first 4 if the AI ignores the limit
+                aiSolutions = aiSolutions.slice(0, 4);
             }
         }
 
@@ -859,10 +923,34 @@ app.get('/api/sarvam/history', authenticateToken, async (req, res) => {
     }
 });
 
+app.delete('/api/sarvam/history/:user_id', authenticateToken, async (req, res) => {
+    const { user_id } = req.params;
+    console.log(`[DELETE HISTORY] Request for user_id: ${user_id} from token_uid: ${req.user.uid}`);
+
+    // Security check: only allow user to delete their own history
+    if (req.user.uid.toString() !== user_id.toString()) {
+        console.warn(`[DELETE HISTORY] Unauthorized attempt by ${req.user.uid} to delete ${user_id}`);
+        return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    try {
+        const result = await pool.query('DELETE FROM sarvam_chats WHERE user_id = $1', [user_id]);
+        console.log(`[DELETE HISTORY] Success. Deleted ${result.rowCount} rows.`);
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('[DELETE HISTORY] Error:', err);
+        res.status(500).json({ error: 'Failed to clear chat history' });
+    }
+});
+
 app.post('/api/sarvam/save', authenticateToken, async (req, res) => {
+    console.log('[SAVE] Full Body:', req.body);
     const { user_id, role, content } = req.body;
-    if (!user_id || !role || !content) {
-        return res.status(400).json({ error: "user_id, role, and content are required" });
+
+    // allow empty content for now to avoid crashes, but log it
+    if (!user_id || !role || content === undefined) {
+        console.warn('[SAVE] Missing required fields:', { user_id, role, hasContent: content !== undefined });
+        return res.status(400).json({ error: "user_id and role are required" });
     }
 
     try {

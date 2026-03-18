@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity, Animated, Modal } from 'react-native';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity, Animated, Modal, Alert, StatusBar } from 'react-native';
 import { Text, TextInput, IconButton, Avatar, ActivityIndicator, Surface, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { sarvamChatApi, transcribeAudioApi, fetchSarvamHistoryApi, saveSarvamMessageApi, textToSpeechApi } from '../../api/api';
+import { sarvamChatApi, transcribeAudioApi, fetchSarvamHistoryApi, saveSarvamMessageApi, textToSpeechApi, clearSarvamHistoryApi } from '../../api/api';
 import { AuthContext } from '../../store/authContext';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
@@ -22,6 +22,7 @@ export default function LocaliteChatScreen({ navigation }: any) {
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
     const [isRecording, setIsRecording] = useState(false);
+    const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
     const scrollViewRef = useRef<ScrollView>(null);
     const soundRef = useRef<Audio.Sound | null>(null);
     const recordingRef = useRef<Audio.Recording | null>(null);
@@ -74,6 +75,25 @@ export default function LocaliteChatScreen({ navigation }: any) {
     }, [state.user?.id]);
 
     const playTTS = async (messageId: string, text: string) => {
+        // If already playing THIS message, stop it
+        if (playingMessageId === messageId) {
+            if (soundRef.current) {
+                try { await soundRef.current.unloadAsync(); } catch (e) { /* ignore */ }
+                soundRef.current = null;
+            }
+            setPlayingMessageId(null);
+            return;
+        }
+
+        // If playing ANOTHER message, stop it first
+        if (playingMessageId) {
+            if (soundRef.current) {
+                try { await soundRef.current.unloadAsync(); } catch (e) { /* ignore */ }
+                soundRef.current = null;
+            }
+            setPlayingMessageId(null);
+        }
+
         // Find language (simple detection: if it contains non-english chars, use Hindi)
         const hasHindi = /[\u0900-\u097F]/.test(text);
         const lang = hasHindi ? 'hi-IN' : 'en-IN';
@@ -87,7 +107,7 @@ export default function LocaliteChatScreen({ navigation }: any) {
                 const path = `${FileSystem.cacheDirectory}tts-${messageId}.mp3`;
                 await FileSystem.writeAsStringAsync(path, base64, { encoding: FileSystem.EncodingType.Base64 });
 
-                // Unload previous sound
+                // Unload previous sound (double check)
                 if (soundRef.current) {
                     try { await soundRef.current.unloadAsync(); } catch (e) { /* ignore */ }
                     soundRef.current = null;
@@ -97,14 +117,25 @@ export default function LocaliteChatScreen({ navigation }: any) {
                 await Audio.setAudioModeAsync({
                     allowsRecordingIOS: false,
                     playsInSilentModeIOS: true,
+                    staysActiveInBackground: false,
+                    shouldDuckAndroid: true,
                 });
 
-                const { sound: newSound } = await Audio.Sound.createAsync({ uri: path });
+                const { sound: newSound } = await Audio.Sound.createAsync(
+                    { uri: path },
+                    { shouldPlay: true },
+                    (status) => {
+                        if (status.isLoaded && status.didJustFinish) {
+                            setPlayingMessageId(null);
+                        }
+                    }
+                );
                 soundRef.current = newSound;
-                await newSound.playAsync();
+                setPlayingMessageId(messageId);
             }
         } catch (err) {
             console.error("TTS Playback error", err);
+            setPlayingMessageId(null);
         } finally {
             setMessages(prev => prev.map(m => m.id === messageId ? { ...m, audioLoading: false } : m));
         }
@@ -230,6 +261,24 @@ export default function LocaliteChatScreen({ navigation }: any) {
         }, 100);
     }, [messages, loading]);
 
+    const handleClearHistory = async () => {
+        if (!state.user?.id) return;
+        
+        try {
+            const res = await clearSarvamHistoryApi(state.user.id);
+            if (res.ok) {
+                setMessages([{
+                    id: '1',
+                    role: 'assistant',
+                    content: `History cleared! I am Simran, your AI Health Assistant. How can I help you today?`,
+                    timestamp: new Date()
+                }]);
+            }
+        } catch (err) {
+            console.error("Failed to clear history", err);
+        }
+    };
+
     const isSameDay = (d1: Date, d2: Date) => {
         return d1.getFullYear() === d2.getFullYear() &&
             d1.getMonth() === d2.getMonth() &&
@@ -247,12 +296,47 @@ export default function LocaliteChatScreen({ navigation }: any) {
         return date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     };
 
+    const renderMessageContent = (content: string, isUser: boolean) => {
+        // Simple markdown-ish formatter for bold and bullets
+        const lines = content.split('\n');
+        return lines.map((line, lineIdx) => {
+            const isBullet = line.trim().startsWith('- ') || line.trim().startsWith('* ') || /^\d+\.\s/.test(line.trim());
+            const cleanLine = isBullet ? line.trim().replace(/^[-*]\s/, '• ').replace(/^(\d+)\.\s/, '$1. ') : line;
+
+            // Handle bold **text**
+            const parts = cleanLine.split(/(\*\*.*?\*\*)/g);
+            return (
+                <Text 
+                    key={lineIdx} 
+                    style={[
+                        styles.messageText, 
+                        isUser ? styles.userText : styles.assistantText,
+                        isBullet && styles.bulletLine
+                    ]}
+                >
+                    {parts.map((part, partIdx) => {
+                        if (part.startsWith('**') && part.endsWith('**')) {
+                            return (
+                                <Text key={partIdx} style={styles.boldText}>
+                                    {part.substring(2, part.length - 2)}
+                                </Text>
+                            );
+                        }
+                        return part;
+                    })}
+                    {lineIdx < lines.length - 1 ? '\n' : ''}
+                </Text>
+            );
+        });
+    };
+
     return (
         <KeyboardAvoidingView
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
+            <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
             <View style={styles.header}>
                 <IconButton
                     icon="arrow-left"
@@ -268,6 +352,27 @@ export default function LocaliteChatScreen({ navigation }: any) {
                     </View>
                 </View>
                 <Avatar.Icon size={40} icon="robot" style={{ backgroundColor: '#FFD700' }} color="#001F3F" />
+                <IconButton
+                    icon="trash-can-outline"
+                    iconColor="rgba(255,255,255,0.7)"
+                    size={24}
+                    onPress={() => {
+                        if (Platform.OS === 'web') {
+                            if (window.confirm("Clear all chat history?")) {
+                                handleClearHistory();
+                            }
+                        } else {
+                            Alert.alert(
+                                "Clear History",
+                                "Are you sure you want to delete all chat history? This cannot be undone.",
+                                [
+                                    { text: "Cancel", style: "cancel" },
+                                    { text: "Clear", onPress: handleClearHistory, style: "destructive" }
+                                ]
+                            );
+                        }
+                    }}
+                />
             </View>
 
             <ScrollView
@@ -299,23 +404,27 @@ export default function LocaliteChatScreen({ navigation }: any) {
                                         styles.messageBubble,
                                         msg.role === 'user' ? styles.userBubble : styles.assistantBubble
                                     ]}>
-                                        <Text style={[
-                                            styles.messageText,
-                                            msg.role === 'user' ? styles.userText : styles.assistantText
-                                        ]}>
-                                            {msg.content}
-                                        </Text>
+                                        <View style={styles.messageContent}>
+                                            {renderMessageContent(msg.content, msg.role === 'user')}
+                                        </View>
                                         <View style={styles.bubbleFooter}>
                                             {msg.role === 'assistant' && (
                                                 <TouchableOpacity
                                                     onPress={() => playTTS(msg.id, msg.content)}
-                                                    style={styles.speakerIcon}
+                                                    style={[
+                                                        styles.speakerIcon,
+                                                        playingMessageId === msg.id && styles.activeSpeakerIcon
+                                                    ]}
                                                     disabled={msg.audioLoading}
                                                 >
                                                     {msg.audioLoading ? (
                                                         <ActivityIndicator size={12} color="#001F3F" />
                                                     ) : (
-                                                        <MaterialCommunityIcons name="volume-high" size={16} color="#001F3F" />
+                                                        <MaterialCommunityIcons 
+                                                            name={playingMessageId === msg.id ? "stop" : "volume-high"} 
+                                                            size={18} 
+                                                            color={playingMessageId === msg.id ? "#D32F2F" : "#001F3F"} 
+                                                        />
                                                     )}
                                                 </TouchableOpacity>
                                             )}
@@ -492,7 +601,17 @@ const styles = StyleSheet.create({
     },
     messageText: {
         fontSize: 15,
-        lineHeight: 20,
+        lineHeight: 22,
+    },
+    messageContent: {
+        marginBottom: 4,
+    },
+    boldText: {
+        fontWeight: 'bold',
+    },
+    bulletLine: {
+        marginLeft: 4,
+        paddingLeft: 4,
     },
     userText: {
         color: '#fff',
@@ -508,7 +627,14 @@ const styles = StyleSheet.create({
     },
     speakerIcon: {
         marginRight: 8,
-        padding: 4,
+        padding: 6,
+        borderRadius: 12,
+        backgroundColor: '#F0F4F8',
+    },
+    activeSpeakerIcon: {
+        backgroundColor: '#FFEBEE',
+        borderWidth: 1,
+        borderColor: '#D32F2F',
     },
     timestamp: {
         fontSize: 10,

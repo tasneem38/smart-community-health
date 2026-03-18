@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { ScrollView, StyleSheet, View, TouchableOpacity, Modal } from "react-native";
+import { ScrollView, StyleSheet, View, TouchableOpacity, Modal, StatusBar } from "react-native";
 import { Text, TextInput, Button, ActivityIndicator, Card, HelperText, IconButton, Portal, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Audio } from 'expo-av';
@@ -116,12 +116,27 @@ export default function LocaliteRequestAssistanceScreen({ navigation }: any) {
       return;
     }
 
-    const textToSpeak = solutions.join(". ") + ". These are temporary suggestions. Wait for your ASHA worker.";
+    if (solutions.length === 0) return;
+
+    // Join solutions for natural reading
+    const textToSpeak = solutions.join(". ") + ". These are temporary suggestions. Please wait for your ASHA worker.";
     setIsSpeaking(true);
+    
     Speech.speak(textToSpeak, {
       onDone: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false),
+      onStopped: () => setIsSpeaking(false),
+      onError: (err) => {
+        console.error("Speech error:", err);
+        setIsSpeaking(false);
+      },
     });
+  };
+
+  const closeSolutions = () => {
+    Speech.stop();
+    setIsSpeaking(false);
+    setShowSolutions(false);
+    navigation.goBack();
   };
 
   const submit = async () => {
@@ -175,11 +190,19 @@ export default function LocaliteRequestAssistanceScreen({ navigation }: any) {
 
   return (
     <View style={{ flex: 1 }}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
       <ScrollView style={styles.container}>
 
         {/* HEADER */}
         <View style={styles.header}>
-          <View>
+          <IconButton
+            icon="arrow-left"
+            iconColor="#fff"
+            size={24}
+            onPress={() => navigation.goBack()}
+            style={{ marginLeft: -10, marginRight: 4 }}
+          />
+          <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Need Help?</Text>
             <Text style={styles.headerSub}>Request assistance from ASHA</Text>
           </View>
@@ -284,28 +307,20 @@ export default function LocaliteRequestAssistanceScreen({ navigation }: any) {
       <Portal>
         <Modal
           visible={showSolutions}
-          onDismiss={() => {
-            setShowSolutions(false);
-            Speech.stop();
-            navigation.goBack();
-          }}
+          onDismiss={closeSolutions}
           // @ts-ignore
           contentContainerStyle={styles.modalContent}
         >
           <IconButton
             icon="close"
             size={24}
-            onPress={() => {
-              setShowSolutions(false);
-              Speech.stop();
-              navigation.goBack();
-            }}
+            onPress={closeSolutions}
             style={styles.closeBtn}
           />
 
           <View style={styles.aiHeader}>
             <MaterialCommunityIcons name="robot" size={32} color="#001F3F" />
-            <Text style={styles.aiTitle}>Temporary Solutions</Text>
+            <Text style={styles.aiTitle}>Simran AI Advice</Text>
           </View>
 
           <Text style={styles.aiSubtitle}>While you wait for your ASHA worker, you can try these:</Text>
@@ -329,7 +344,7 @@ export default function LocaliteRequestAssistanceScreen({ navigation }: any) {
             mode="contained"
             icon={isSpeaking ? "stop" : "volume-high"}
             onPress={speakSolutions}
-            style={styles.ttsBtn}
+            style={[styles.ttsBtn, isSpeaking && { backgroundColor: '#D32F2F' }]}
             labelStyle={{ color: '#fff' }}
           >
             {isSpeaking ? "Stop Voice" : "Listen to Advice"}
@@ -337,12 +352,9 @@ export default function LocaliteRequestAssistanceScreen({ navigation }: any) {
 
           <Button
             mode="outlined"
-            onPress={() => {
-              setShowSolutions(false);
-              Speech.stop();
-              navigation.goBack();
-            }}
+            onPress={closeSolutions}
             style={styles.doneBtn}
+            textColor="#001F3F"
           >
             Got it
           </Button>

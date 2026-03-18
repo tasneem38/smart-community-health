@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { Text, Card, Chip, ActivityIndicator, Searchbar, Button } from 'react-native-paper';
+import { View, ScrollView, StyleSheet, RefreshControl, StatusBar } from 'react-native';
+import { Text, Card, Chip, ActivityIndicator, Searchbar, Button, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 // @ts-ignore
@@ -10,7 +10,7 @@ import { fetchAlerts } from "../../api/api";
 import { getAlertsFromDB, addAlert } from "../../db/db";
 import AlertCard from "../../components/AlertCard";
 
-export default function AlertsScreen() {
+export default function AlertsScreen({ navigation }: any) {
   const { t } = useTranslation();
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,10 +80,18 @@ export default function AlertsScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
       {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <View>
+          <IconButton
+            icon="arrow-left"
+            iconColor="#fff"
+            size={24}
+            onPress={() => navigation.goBack()}
+            style={{ marginLeft: -10, marginRight: -10 }}
+          />
+          <View style={{ flex: 1, marginLeft: 8 }}>
             <Text style={styles.headerTitle}>{t('alerts_title')}</Text>
             <Text style={styles.headerSub}>{t('alerts_sub')}</Text>
           </View>

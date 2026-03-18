@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
-import { ScrollView, StyleSheet, View, FlatList, TouchableOpacity, RefreshControl, Alert } from "react-native";
-import { Card, Text, Button, ActivityIndicator, Chip, Divider, Searchbar, TextInput } from "react-native-paper";
+import { ScrollView, StyleSheet, View, FlatList, TouchableOpacity, RefreshControl, Alert, StatusBar } from "react-native";
+import { Card, Text, Button, ActivityIndicator, Chip, Divider, Searchbar, TextInput, IconButton } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from 'react-i18next';
 // @ts-ignore
@@ -18,7 +18,7 @@ interface AssistanceRequest {
   resolved: boolean;
 }
 
-export default function AssistanceRequestsScreen() {
+export default function AssistanceRequestsScreen({ navigation }: any) {
   const { t } = useTranslation();
   const { state } = useContext(AuthContext);
   const user = state.user;
@@ -92,10 +92,20 @@ export default function AssistanceRequestsScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
 
       {/* HEADER STATS */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('assistance_requests')}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+          <IconButton
+            icon="arrow-left"
+            iconColor="#fff"
+            size={24}
+            onPress={() => navigation.goBack()}
+            style={{ marginLeft: -10, marginRight: 4 }}
+          />
+          <Text style={styles.headerTitle}>{t('assistance_requests')}</Text>
+        </View>
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
             <Text style={styles.statNum}>{pending}</Text>

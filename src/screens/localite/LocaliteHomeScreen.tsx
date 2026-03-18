@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image, StatusBar } from 'react-native';
 import { Text, Card } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AuthContext } from '../../store/authContext';
@@ -9,7 +9,9 @@ export default function LocaliteHomeScreen({ navigation }: any) {
   const user = state.user;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+    <View style={{ flex: 1 }}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
 
       {/* -------------------------------------------
           HERO HEADER
@@ -88,7 +90,8 @@ export default function LocaliteHomeScreen({ navigation }: any) {
 
       </View>
 
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

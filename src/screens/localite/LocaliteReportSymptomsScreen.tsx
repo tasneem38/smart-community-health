@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { ScrollView, StyleSheet, Alert, View, TouchableOpacity, Image } from "react-native";
+import { ScrollView, StyleSheet, Alert, View, TouchableOpacity, Image, StatusBar } from "react-native";
 import { Text, Card, Button, TextInput, Checkbox, SegmentedButtons, Divider, IconButton, ActivityIndicator } from "react-native-paper";
 import * as Location from "expo-location";
 import * as ImagePicker from 'expo-image-picker';
@@ -38,7 +38,7 @@ const SYMPTOM_GROUPS = [
   }
 ];
 
-export default function LocaliteReportSymptomsScreen() {
+export default function LocaliteReportSymptomsScreen({ navigation }: any) {
   const { state } = useContext(AuthContext);
   const user = state.user;
   const { t } = useTranslation();
@@ -228,9 +228,18 @@ export default function LocaliteReportSymptomsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={{ flex: 1 }}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+      <ScrollView style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
+        <IconButton
+          icon="arrow-left"
+          iconColor="#fff"
+          size={24}
+          onPress={() => navigation.goBack()}
+          style={{ marginLeft: -10, marginRight: 4 }}
+        />
         <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>Report Health Issue</Text>
           <Text style={styles.headerSub}>Notify ASHA & get AI guidance</Text>
@@ -411,7 +420,8 @@ export default function LocaliteReportSymptomsScreen() {
           <Text style={styles.btnHint}>ASHA worker will be notified</Text>
         </Card.Content>
       </Card>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

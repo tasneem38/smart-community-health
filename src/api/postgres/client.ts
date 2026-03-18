@@ -115,6 +115,10 @@ export async function chatWithSarvamPostgres(messages: any[]) {
     return request("/api/sarvam/chat", "POST", { messages });
 }
 
+export async function clearSarvamHistoryPostgres(userId: number) {
+    return request(`/api/sarvam/history/${userId}`, "DELETE");
+}
+
 export async function transcribeAudioPostgres(uri: string) {
     console.log("[STT Frontend] Transcribing URI:", uri);
     const formData = new FormData();
@@ -146,6 +150,7 @@ export async function fetchSarvamHistoryPostgres(userId: number) {
 }
 
 export async function saveSarvamMessagePostgres(userId: number, role: string, content: string) {
+    console.log(`[CLIENT SAVE] userId=${userId}, role=${role}, contentLen=${content?.length}`);
     return request("/api/sarvam/save", "POST", { user_id: userId, role, content });
 }
 

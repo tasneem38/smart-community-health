@@ -114,17 +114,17 @@ export default function Navigation() {
               <Stack.Screen
                 name="LocaliteReport"
                 component={LocaliteReportSymptomsScreen}
-                options={{ title: 'Report Symptoms', headerShown: true }}
+                options={{ headerShown: false }}
               />
               <Stack.Screen
                 name="WaterStatus"
                 component={LocaliteWaterStatusScreen}
-                options={{ title: 'Water Status', headerShown: true }}
+                options={{ headerShown: false }}
               />
               <Stack.Screen
                 name="Assistance"
                 component={LocaliteRequestAssistanceScreen}
-                options={{ title: 'Request Help', headerShown: true }}
+                options={{ headerShown: false }}
               />
               <Stack.Screen
                 name="LocaliteChat"
@@ -144,14 +144,14 @@ export default function Navigation() {
           <Stack.Screen
             name="SymptomChecker"
             component={SymptomCheckerScreen}
-            options={{ headerShown: true }}
+            options={{ headerShown: false }}
           />
 
-          <Stack.Screen name="SymptomReport" component={SymptomReportScreen} options={{ title: 'Report Symptoms', headerShown: true }} />
-          <Stack.Screen name="WaterTestReport" component={WaterTestReportScreen} options={{ title: 'Water Quality Test', headerShown: true }} />
-          <Stack.Screen name="AssistanceRequests" component={AssistanceRequestsScreen} options={{ title: 'Assistance Requests', headerShown: true }} />
-          <Stack.Screen name="Alerts" component={AlertsScreen} options={{ title: 'Alerts', headerShown: true }} />
-          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ title: 'Privacy Policy', headerShown: true }} />
+          <Stack.Screen name="SymptomReport" component={SymptomReportScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="WaterTestReport" component={WaterTestReportScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="AssistanceRequests" component={AssistanceRequestsScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Alerts" component={AlertsScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ headerShown: false }} />
 
           {/* -------- CLINIC SCREENS -------- */}
 
@@ -201,13 +201,13 @@ export default function Navigation() {
           <Stack.Screen
             name="RecentWaterTests"
             component={require("../screens/asha/AshaRecentWaterTestsScreen").default}
-            options={{ headerShown: true, title: "Recent Water Tests" }}
+            options={{ headerShown: false }}
           />
 
           <Stack.Screen
             name="WaterTestDetails"
             component={require("../screens/asha/AshaWaterTestDetailsScreen").default}
-            options={{ headerShown: true, title: "Test Details" }}
+            options={{ headerShown: false }}
           />
 
         </>

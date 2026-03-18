@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useContext } from "react";
-import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card, ActivityIndicator, Divider, ProgressBar } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, RefreshControl, StatusBar } from 'react-native';
+import { Text, Card, ActivityIndicator, Divider, ProgressBar, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AuthContext } from "../../store/authContext";
 import { useTranslation } from 'react-i18next';
 import { getLatestWaterStatus } from "../../api/api";
 
-export default function LocaliteWaterStatusScreen() {
+export default function LocaliteWaterStatusScreen({ navigation }: any) {
   const { state } = useContext(AuthContext);
   const user = state.user;
 
@@ -61,7 +61,14 @@ export default function LocaliteWaterStatusScreen() {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <View>
+      <IconButton
+        icon="arrow-left"
+        iconColor="#fff"
+        size={24}
+        onPress={() => navigation.goBack()}
+        style={{ marginLeft: -10, marginRight: 4 }}
+      />
+      <View style={{ flex: 1 }}>
         <Text style={styles.headerTitle}>Water Status</Text>
         <Text style={styles.headerSub}>Latest reports for {user?.village || "your area"}</Text>
       </View>
@@ -115,8 +122,10 @@ export default function LocaliteWaterStatusScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
+    <View style={{ flex: 1 }}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+      <ScrollView
+        style={styles.container}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={loadWaterStatus} colors={["#001F3F"]} />}
     >
       {renderHeader()}
@@ -218,7 +227,8 @@ export default function LocaliteWaterStatusScreen() {
           />
         ))}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

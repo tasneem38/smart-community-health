@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View, StatusBar } from "react-native";
 import { Text, Card, Chip, Button, ActivityIndicator } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +38,9 @@ export default function LocaliteAlertsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={{ flex: 1 }}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+      <ScrollView style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
         <View>
@@ -98,7 +100,8 @@ export default function LocaliteAlertsScreen() {
           );
         })
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

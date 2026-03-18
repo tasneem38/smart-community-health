@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
-import { Text, TextInput, Button, ActivityIndicator, RadioButton, Card, Divider, SegmentedButtons } from 'react-native-paper';
+import { View, ScrollView, StyleSheet, Alert, TouchableOpacity, Image, StatusBar } from 'react-native';
+import { Text, TextInput, Button, ActivityIndicator, RadioButton, Card, Divider, SegmentedButtons, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
@@ -144,11 +144,20 @@ export default function WaterTestReportScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+    <View style={{ flex: 1 }}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
 
       {/* HEADER */}
       <View style={styles.header}>
-        <View>
+        <IconButton
+          icon="arrow-left"
+          iconColor="#fff"
+          size={24}
+          onPress={() => navigation.goBack()}
+          style={{ marginLeft: -10, marginRight: 4 }}
+        />
+        <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>{t('report_water_test')}</Text>
           <Text style={styles.headerSub}>{t('field_kit_entry')}</Text>
         </View>
@@ -302,7 +311,8 @@ export default function WaterTestReportScreen({ navigation }: any) {
         </Card.Content>
       </Card>
 
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

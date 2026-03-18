@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, ScrollView, StyleSheet, TouchableOpacity, Image, StatusBar } from 'react-native';
 import { Text, Avatar, Card } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,9 @@ export default function DashboardScreen({ navigation }: any) {
   const role = user?.role;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+    <View style={{ flex: 1 }}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
       {/* -------------------------------------------
           HERO SECTION
       -------------------------------------------- */}
@@ -98,7 +100,8 @@ export default function DashboardScreen({ navigation }: any) {
         />
       </View>
 
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

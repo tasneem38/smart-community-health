@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl, Image } from 'react-native';
-import { Text, Card, ActivityIndicator, Divider, Chip, List } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, RefreshControl, Image, StatusBar } from 'react-native';
+import { Text, Card, ActivityIndicator, Divider, Chip, List, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AuthContext } from '../../store/authContext';
 import { fetchWaterTestsPostgres, API_URL } from '../../api/postgres/client';
@@ -60,19 +60,31 @@ export default function AshaRecentWaterTestsScreen({ navigation }: any) {
     if (loading && !refreshing) {
         return (
             <View style={styles.loadingContainer}>
+                <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
                 <ActivityIndicator size="large" color="#001F3F" />
             </View>
         );
     }
 
     return (
-        <ScrollView
-            style={styles.container}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadTests} colors={["#001F3F"]} />}
-        >
+        <View style={{ flex: 1 }}>
+            <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+            <ScrollView
+                style={styles.container}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadTests} colors={["#001F3F"]} />}
+            >
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Recent Tests</Text>
-                <Text style={styles.headerSub}>Historical records for {user?.village}</Text>
+                <IconButton
+                    icon="arrow-left"
+                    iconColor="#fff"
+                    size={24}
+                    onPress={() => navigation.goBack()}
+                    style={{ marginLeft: -10, marginRight: 4 }}
+                />
+                <View style={{ flex: 1 }}>
+                    <Text style={styles.headerTitle}>Recent Tests</Text>
+                    <Text style={styles.headerSub}>Historical records for {user?.village}</Text>
+                </View>
             </View>
 
             {error && (
@@ -135,6 +147,7 @@ export default function AshaRecentWaterTestsScreen({ navigation }: any) {
                 ))
             )}
         </ScrollView>
+        </View>
     );
 }
 

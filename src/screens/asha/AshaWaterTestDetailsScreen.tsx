@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Image } from 'react-native';
-import { Text, Card, Divider, Chip, List, useTheme } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, Image, StatusBar } from 'react-native';
+import { Text, Card, Divider, Chip, List, useTheme, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { API_URL } from '../../api/postgres/client';
 
-export default function AshaWaterTestDetailsScreen({ route }: any) {
+export default function AshaWaterTestDetailsScreen({ route, navigation }: any) {
     const { test } = route.params;
     const theme = useTheme();
 
@@ -22,10 +22,21 @@ export default function AshaWaterTestDetailsScreen({ route }: any) {
     };
 
     return (
-        <ScrollView style={styles.container}>
+        <View style={{ flex: 1 }}>
+            <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+            <ScrollView style={styles.container}>
             <View style={styles.header}>
-                <View style={styles.headerRow}>
-                    <Text style={styles.headerTitle}>Water Test Report</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <IconButton
+                        icon="arrow-left"
+                        iconColor="#fff"
+                        size={24}
+                        onPress={() => navigation.goBack()}
+                        style={{ marginLeft: -10, marginRight: 4 }}
+                    />
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.headerTitle}>Water Test Report</Text>
+                    </View>
                     {renderStatus(test.turbidity, test.ph)}
                 </View>
                 <Text style={styles.headerSub}>ID: {test.id}</Text>
@@ -105,6 +116,7 @@ export default function AshaWaterTestDetailsScreen({ route }: any) {
                 </Card>
             )}
         </ScrollView>
+        </View>
     );
 }
 

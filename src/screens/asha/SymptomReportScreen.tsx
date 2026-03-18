@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
-import { Text, TextInput, Button, Checkbox, ActivityIndicator, Card, Divider } from 'react-native-paper';
+import { View, ScrollView, StyleSheet, Alert, TouchableOpacity, Image, StatusBar } from 'react-native';
+import { Text, TextInput, Button, Checkbox, ActivityIndicator, Card, Divider, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
@@ -165,11 +165,20 @@ export default function SymptomReportScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 50 }}>
+    <View style={{ flex: 1 }}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 50 }}>
 
       {/* HEADER */}
       <View style={styles.header}>
-        <View>
+        <IconButton
+          icon="arrow-left"
+          iconColor="#fff"
+          size={24}
+          onPress={() => navigation.goBack()}
+          style={{ marginLeft: -10, marginRight: 4 }}
+        />
+        <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>{t("report_symptoms")}</Text>
           <Text style={styles.headerSub}>{t("asha_portal")}</Text>
         </View>
@@ -275,7 +284,8 @@ export default function SymptomReportScreen({ navigation }: any) {
         )}
       </View>
 
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
