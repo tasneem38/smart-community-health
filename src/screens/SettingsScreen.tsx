@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { View, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, Modal } from "react-native";
+import { View, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert, Modal, Platform } from "react-native";
 import { Text, Avatar, Divider, Button } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AuthContext } from "../store/authContext";
@@ -34,10 +34,17 @@ export default function SettingsScreen({ navigation }: any) {
   };
 
   const handleLogout = () => {
-    Alert.alert(t('logout_confirm_title'), t('logout_confirm_msg'), [
-      { text: t('cancel'), style: "cancel" },
-      { text: t('sign_out'), style: "destructive", onPress: logout }
-    ]);
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`${t('logout_confirm_title')}\n\n${t('logout_confirm_msg')}`);
+      if (confirmed) {
+        logout();
+      }
+    } else {
+      Alert.alert(t('logout_confirm_title'), t('logout_confirm_msg'), [
+        { text: t('cancel'), style: "cancel" },
+        { text: t('sign_out'), style: "destructive", onPress: logout }
+      ]);
+    }
   };
 
   return (
