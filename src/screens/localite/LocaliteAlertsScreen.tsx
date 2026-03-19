@@ -38,6 +38,7 @@ export default function LocaliteAlertsScreen({ navigation }: any) {
   };
 
   return (
+    <View style={{ flex: 1 }}>
       <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
       <ScrollView style={styles.container}>
       {/* HEADER */}
