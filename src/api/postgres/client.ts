@@ -123,14 +123,19 @@ export async function transcribeAudioPostgres(uri: string) {
     console.log("[STT Frontend] Transcribing URI:", uri);
     const formData = new FormData();
 
-    // Construct the file object correctly for React Native fetch
-    const file = {
-        uri,
-        name: 'audio-input.m4a',
-        type: 'audio/m4a'
-    };
-
-    formData.append('audio', file as any);
+    if (Platform.OS === 'web') {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        formData.append('audio', blob, 'audio-input.m4a');
+    } else {
+        // Construct the file object correctly for React Native fetch
+        const file = {
+            uri,
+            name: 'audio-input.m4a',
+            type: 'audio/m4a'
+        };
+        formData.append('audio', file as any);
+    }
 
     const result = await request("/api/sarvam/stt", "POST", formData, true);
 

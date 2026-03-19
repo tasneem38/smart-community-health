@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { API_URL } from './client';
 import { getToken } from '../auth';
 
@@ -18,11 +19,17 @@ export async function uploadImage(imageUri: string): Promise<string> {
         const type = match ? `image/${match[1]}` : 'image/jpeg';
 
         // Append image to form data
-        formData.append('image', {
-            uri: imageUri,
-            name: filename,
-            type: type,
-        } as any);
+        if (Platform.OS === 'web') {
+            const res = await fetch(imageUri);
+            const blob = await res.blob();
+            formData.append('image', blob, filename);
+        } else {
+            formData.append('image', {
+                uri: imageUri,
+                name: filename,
+                type: type,
+            } as any);
+        }
 
         // Upload to server
         const response = await fetch(`${API_URL}/upload`, {
@@ -60,11 +67,17 @@ export async function uploadAudio(audioUri: string): Promise<string> {
         const formData = new FormData();
         const filename = audioUri.split('/').pop() || 'audio.m4a';
 
-        formData.append('image', { // Server expects 'image' field for all uploads currently
-            uri: audioUri,
-            name: filename,
-            type: 'audio/m4a',
-        } as any);
+        if (Platform.OS === 'web') {
+            const res = await fetch(audioUri);
+            const blob = await res.blob();
+            formData.append('image', blob, filename); // Server expects 'image' field for all uploads currently
+        } else {
+            formData.append('image', { 
+                uri: audioUri,
+                name: filename,
+                type: 'audio/m4a',
+            } as any);
+        }
 
         const response = await fetch(`${API_URL}/upload`, {
             method: 'POST',
