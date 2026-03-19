@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View, RefreshControl } from "react-native";
-import { Card, Text, ActivityIndicator, ProgressBar, Divider } from "react-native-paper";
+import { ScrollView, StyleSheet, View, RefreshControl, StatusBar } from "react-native";
+import { Card, Text, ActivityIndicator, ProgressBar, Divider, IconButton } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { fetchDetailedAnalytics } from "../../api/api";
 
-export default function AIInsightsScreen() {
+export default function AIInsightsScreen({ navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -59,10 +59,18 @@ export default function AIInsightsScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
       {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <View>
+          <IconButton
+            icon="arrow-left"
+            iconColor="#fff"
+            size={24}
+            onPress={() => navigation.goBack()}
+            style={{ marginLeft: -10, marginRight: 4 }}
+          />
+          <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>AI Analytics Dashboard</Text>
             <Text style={styles.headerSub}>Deep dive into health data</Text>
           </View>

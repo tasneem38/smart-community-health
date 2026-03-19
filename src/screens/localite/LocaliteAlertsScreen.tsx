@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View, StatusBar } from "react-native";
-import { Text, Card, Chip, Button, ActivityIndicator } from 'react-native-paper';
+import { Text, Card, Chip, Button, ActivityIndicator, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { fetchAlerts } from "../../api/api";
 import { getAlertsFromDB, addAlert } from "../../db/db";
 import { AlertRecord } from "../../types/Alerts";
 
-export default function LocaliteAlertsScreen() {
+export default function LocaliteAlertsScreen({ navigation }: any) {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true); // Added loading state
 
@@ -38,12 +38,18 @@ export default function LocaliteAlertsScreen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
       <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
       <ScrollView style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
-        <View>
+        <IconButton
+          icon="arrow-left"
+          iconColor="#fff"
+          size={24}
+          onPress={() => navigation.goBack()}
+          style={{ marginLeft: -10, marginRight: 4 }}
+        />
+        <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>Community Alerts</Text>
           <Text style={styles.headerSub}>Stay informed, stay safe</Text>
         </View>

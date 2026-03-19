@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { Card, Text, Button, ActivityIndicator } from "react-native-paper";
+import { ScrollView, StyleSheet, View, StatusBar } from "react-native";
+import { Card, Text, Button, ActivityIndicator, IconButton } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getPendingQueue, clearQueue } from "../../db/db";
 
-export default function ClinicOfflineQueueScreen() {
+export default function ClinicOfflineQueueScreen({ navigation }: any) {
   const [queue, setQueue] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,10 +21,18 @@ export default function ClinicOfflineQueueScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
       {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <View>
+          <IconButton
+            icon="arrow-left"
+            iconColor="#fff"
+            size={24}
+            onPress={() => navigation.goBack()}
+            style={{ marginLeft: -10, marginRight: 4 }}
+          />
+          <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Offline Queue</Text>
             <Text style={styles.headerSub}>Pending updates to sync</Text>
           </View>

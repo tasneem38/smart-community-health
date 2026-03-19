@@ -113,26 +113,32 @@ export default function HomeScreen({ navigation }: any) {
           <FeatureCard
             icon="clipboard-text-outline"
             title="Symptom Reporting"
+            description="Log and track potential disease cases safely in real-time."
           />
           <FeatureCard
             icon="water-outline"
             title="Water Quality"
+            description="Monitor and ensure the safety of local water sources constantly."
           />
           <FeatureCard
             icon="brain"
             title="AI Health Checker"
+            description="Get instant AI-driven health assessments and reliable guidance."
           />
           <FeatureCard
             icon="alert-octagon-outline"
             title="Outbreak Alerts"
+            description="Receive critical early warnings for community health outbreaks."
           />
           <FeatureCard
             icon="wifi-off"
             title="Offline Support"
+            description="Ensure uninterrupted access to essential features securely, even without internet."
           />
           <FeatureCard
             icon="hand-heart-outline"
             title="Local Assistance"
+            description="Directly connect with healthcare providers and trained ASHA workers."
           />
         </View>
       </View>
@@ -146,15 +152,16 @@ export default function HomeScreen({ navigation }: any) {
   );
 }
 
-function FeatureCard({ icon, title }: { icon: any; title: string }) {
+function FeatureCard({ icon, title, description }: { icon: any; title: string, description: string }) {
   return (
     <View style={styles.featureCard}>
       <View style={styles.cardHeader} />
       <View style={styles.cardContent}>
         <View style={styles.iconCircle}>
-          <MaterialCommunityIcons name={icon} size={32} color={COLORS.midnight} />
+          <MaterialCommunityIcons name={icon} size={34} color={COLORS.midnight} />
         </View>
         <Text style={styles.cardTitle}>{title}</Text>
+        <Text style={styles.cardDescription}>{description}</Text>
       </View>
     </View>
   );
@@ -274,49 +281,60 @@ const styles = StyleSheet.create({
   featureGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 15,
-    marginTop: 20,
+    justifyContent: 'center',
+    gap: 20,
+    marginTop: 40,
   },
   featureCard: {
-    width: (width - 63) / 2, // 2 columns
+    flexGrow: 1,
+    flexBasis: '45%',
+    minWidth: 280,
     backgroundColor: '#fff',
     borderRadius: 16,
-    elevation: 4,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    marginBottom: 10,
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    marginBottom: 20,
     overflow: 'hidden',
   },
   cardHeader: {
-    height: 40,
+    height: 50,
     backgroundColor: COLORS.midnight,
   },
   cardContent: {
-    padding: 15,
+    padding: 20,
     alignItems: 'center',
-    paddingBottom: 25,
+    paddingBottom: 30,
   },
   iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     backgroundColor: COLORS.gold,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -30,
+    marginTop: -54, // Pull up over the header
     borderWidth: 4,
     borderColor: '#fff',
+    elevation: 4,
   },
   cardTitle: {
-    fontSize: 13,
+    fontSize: 18,
     fontWeight: '800',
     color: COLORS.midnight,
     textAlign: 'center',
-    marginTop: 12,
-    lineHeight: 18,
+    marginTop: 16,
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: COLORS.textGray,
+    textAlign: 'center',
+    lineHeight: 22,
+    paddingHorizontal: 10,
   },
 
   /* FOOTER */

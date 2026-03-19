@@ -1,13 +1,13 @@
 import React, { useState, useContext } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { TextInput, Button, Text, Card, ActivityIndicator } from "react-native-paper";
+import { ScrollView, StyleSheet, View, StatusBar } from "react-native";
+import { TextInput, Button, Text, Card, ActivityIndicator, IconButton } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { askGroq } from "../../api/aiService";
 import { AuthContext } from "../../store/authContext";
 import { saveAiRecord } from "../../api/api";
 import { useTranslation } from "react-i18next";
 
-export default function ClinicSummaryGeneratorScreen() {
+export default function ClinicSummaryGeneratorScreen({ navigation }: any) {
   const { state } = useContext(AuthContext);
   const userId = state.user?.id;
 
@@ -77,10 +77,18 @@ Report:
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
       {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <View>
+          <IconButton
+            icon="arrow-left"
+            iconColor="#fff"
+            size={24}
+            onPress={() => navigation.goBack()}
+            style={{ marginLeft: -10, marginRight: 4 }}
+          />
+          <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Summary Generator</Text>
             <Text style={styles.headerSub}>AI-powered clinical summaries</Text>
           </View>

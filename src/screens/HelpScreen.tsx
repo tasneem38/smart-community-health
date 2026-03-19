@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, View, Linking, TouchableOpacity } from "react-native";
-import { Text, Card, List, Button, Divider, Avatar } from "react-native-paper";
+import { ScrollView, StyleSheet, View, Linking, TouchableOpacity, StatusBar } from "react-native";
+import { Text, Card, List, Button, Divider, Avatar, IconButton } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-export default function HelpScreen() {
+export default function HelpScreen({ navigation }: any) {
   const [expandedSection, setExpandedSection] = useState<string | null>("guide");
 
   const handlePress = (section: string) => {
@@ -16,12 +16,20 @@ export default function HelpScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
       {/* -------------------------------------------
           HEADER
       -------------------------------------------- */}
       <View style={styles.headerContainer}>
         <View style={styles.headerContent}>
-          <View>
+          <IconButton
+            icon="arrow-left"
+            iconColor="#fff"
+            size={24}
+            onPress={() => navigation.goBack()}
+            style={{ marginLeft: -10, marginRight: 4 }}
+          />
+          <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Help Center</Text>
             <Text style={styles.headerSubtitle}>Hygiene, Safety & Support</Text>
           </View>

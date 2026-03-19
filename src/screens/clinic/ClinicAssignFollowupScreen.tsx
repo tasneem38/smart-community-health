@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { Card, Text, Button, TextInput, Snackbar } from "react-native-paper";
+import { ScrollView, StyleSheet, View, StatusBar } from "react-native";
+import { Card, Text, Button, TextInput, Snackbar, IconButton } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { assignFollowup } from "../../api/api";
 
-export default function ClinicAssignFollowupScreen() {
+export default function ClinicAssignFollowupScreen({ navigation }: any) {
   const [patient, setPatient] = useState("");
   const [task, setTask] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,10 +40,18 @@ export default function ClinicAssignFollowupScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#001F3F" barStyle="light-content" />
       {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <View>
+          <IconButton
+            icon="arrow-left"
+            iconColor="#fff"
+            size={24}
+            onPress={() => navigation.goBack()}
+            style={{ marginLeft: -10, marginRight: 4 }}
+          />
+          <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Assign Follow-up</Text>
             <Text style={styles.headerSub}>Deploy ASHA workers</Text>
           </View>

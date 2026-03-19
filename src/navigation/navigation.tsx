@@ -139,7 +139,7 @@ export default function Navigation() {
           )}
 
           {/* COMMON SCREENS */}
-          <Stack.Screen name="Help" component={HelpScreen} />
+          <Stack.Screen name="Help" component={HelpScreen} options={{ headerShown: false }} />
 
           <Stack.Screen
             name="SymptomChecker"
@@ -158,44 +158,44 @@ export default function Navigation() {
           <Stack.Screen
             name="ClinicAlerts"
             component={ClinicAlertsScreen}
-            options={{ headerShown: true, title: "Alerts" }}
+            options={{ headerShown: false }}
           />
 
           <Stack.Screen
             name="ClinicPendingReviews"
             component={ClinicPendingReviewsScreen}
-            options={{ headerShown: true, title: "Pending Reviews" }}
+            options={{ headerShown: false }}
           />
 
           <Stack.Screen
             name="ClinicOfflineQueue"
             component={ClinicOfflineQueueScreen}
-            options={{ headerShown: true, title: "Offline Queue" }}
+            options={{ headerShown: false }}
           />
 
           <Stack.Screen
             name="ClinicHealthInsights"
             component={ClinicHealthInsightsScreen}
-            options={{ headerShown: true, title: "Health Insights" }}
+            options={{ headerShown: false }}
           />
 
           <Stack.Screen
             name="ClinicAssignFollowup"
             component={ClinicAssignFollowupScreen}
-            options={{ headerShown: true, title: "Assign Follow-ups" }}
+            options={{ headerShown: false }}
           />
 
           <Stack.Screen
             name="ClinicAIInsights"
             component={ClinicAIInsightsScreen}
-            options={{ headerShown: true, title: "AI Insights Dashboard" }}
+            options={{ headerShown: false }}
           />
 
           {/* 🚀 NEW — CLINIC SUMMARY GENERATOR */}
           <Stack.Screen
             name="ClinicSummaryGenerator"
             component={ClinicSummaryGeneratorScreen}
-            options={{ headerShown: true, title: "Summary Generator" }}
+            options={{ headerShown: false }}
           />
 
           <Stack.Screen
